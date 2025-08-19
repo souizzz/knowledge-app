@@ -1,6 +1,0 @@
-authtoken: 31QEzZgPl6F3UKqGZjrxOnRpjXk_ic92Fey8PDaR6BAyZPPd
-tunnels:
-  myapp:
-    proto: http
-    addr: 8080    # ← ここを 8080 に！
-    domain: knowledge.app
