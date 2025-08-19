@@ -15,7 +15,7 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
@@ -27,35 +27,49 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func main() {
+	log.Println("Starting Slack Knowledge Bot backend...")
+
 	// 設定読み込み
 	cfg := config.Load()
+	log.Printf("Configuration loaded for port %s", cfg.Port)
 
 	// DB接続
 	database := db.Connect(cfg)
+	defer database.Close()
 
 	// リポジトリ & サービス & ハンドラ
 	repo := knowledge.NewRepository(database)
 	service := knowledge.NewService(repo)
 	handler := knowledge.NewHandler(service)
 
-	// API（CORSヘッダー付き）
+	// ヘルスチェック
 	http.HandleFunc("/health", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Backend OK")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, `{"status":"ok","service":"slack-knowledge-bot"}`)
 	}))
 
-	// Original endpoints
+	// Knowledge API endpoints
 	http.HandleFunc("/knowledge", corsMiddleware(handler.HandleKnowledge))
 	http.HandleFunc("/knowledge/", corsMiddleware(handler.HandleKnowledgeByID))
 	http.HandleFunc("/knowledge/regenerate-embeddings", corsMiddleware(handler.HandleRegenerateEmbeddings))
 	http.HandleFunc("/ask", corsMiddleware(handler.HandleAsk))
 
-	// New API endpoints with /api prefix for frontend
+	// Frontend API endpoints with /api prefix
 	http.HandleFunc("/api/knowledge", corsMiddleware(handler.HandleKnowledge))
 	http.HandleFunc("/api/knowledge/", corsMiddleware(handler.HandleKnowledgeByID))
+	http.HandleFunc("/api/ask", corsMiddleware(handler.HandleAsk))
 
 	// Slack連携
 	slack.RegisterSlackHandlers(corsMiddleware)
 
-	log.Printf("Server running on port %s", cfg.Port)
-	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
+	log.Printf("Server starting on port %s", cfg.Port)
+	log.Printf("Available endpoints:")
+	log.Printf("  - Health: /health")
+	log.Printf("  - Knowledge: /knowledge, /api/knowledge")
+	log.Printf("  - Ask: /ask, /api/ask")
+	log.Printf("  - Slack: /slack/commands")
+
+	if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }
