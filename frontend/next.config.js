@@ -2,7 +2,7 @@
 const nextConfig = {
     async rewrites() {
       return [
-        { source: "/api/auth/:path*", destination: "http://localhost:8081/auth/:path*" },
+        { source: "/api/auth/:path*", destination: "http://auth:8081/auth/:path*" },
       ];
     },
 };

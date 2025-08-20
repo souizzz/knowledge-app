@@ -28,8 +28,10 @@ services:
     build: ./backend/authsvc
     container_name: slackbot-auth
     depends_on:
-      - db
-      - maildev
+      db:
+        condition: service_healthy
+      maildev:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgres://user:password@db:5432/slackbot?sslmode=disable
       JWT_SECRET: please_change_me
@@ -42,11 +44,9 @@ services:
       PUBLIC_APP_URL: http://localhost:3000
     ports:
       - "8081:8081"
+    # ヘルスチェック無効化（Distrolessイメージのため）
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      disable: true
     restart: unless-stopped
 
   backend:
@@ -85,6 +85,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      auth:
+        condition: service_started
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8080
     ports:

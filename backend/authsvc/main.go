@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -8,8 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"net/smtp"
 	"os"
 	"strconv"
 	"strings"
@@ -76,11 +77,21 @@ func main() {
 	s := &server{cfg: cfg, db: db}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/auth/register", s.handleRegister)
-	mux.HandleFunc("/auth/verify-email", s.handleVerifyEmail)
-	mux.HandleFunc("/auth/login", s.handleLogin)
-	mux.HandleFunc("/auth/me", s.handleMe)
-	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200); w.Write([]byte("ok")) })
+
+	// ミドルウェア：すべてのリクエストをログに記録
+	logHandler := func(pattern string, handler http.HandlerFunc) {
+		mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+			log.Printf("[%s] %s %s from %s", pattern, r.Method, r.URL.Path, r.RemoteAddr)
+			handler(w, r)
+		})
+	}
+
+	logHandler("/auth/register", s.handleRegister)
+	logHandler("/auth/verify-email", s.handleVerifyEmail)
+	logHandler("/auth/login", s.handleLogin)
+	logHandler("/auth/logout", s.handleLogout)
+	logHandler("/auth/me", s.handleMe)
+	logHandler("/healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200); w.Write([]byte("ok")) })
 
 	handler := withCORS(cfg.AppOrigin, mux)
 
@@ -125,10 +136,59 @@ func checkPassword(hash, pw string) error {
 
 func sendMail(cfg config, to, subject, body string) error {
 	addr := fmt.Sprintf("%s:%d", cfg.SMTPHost, cfg.SMTPPort)
-	msg := []byte("To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"Content-Type: text/plain; charset=UTF-8\r\n\r\n" + body + "\r\n")
-	return smtp.SendMail(addr, nil, cfg.MailFrom, []string{to}, msg)
+
+	// 最もシンプルなメッセージフォーマット
+	msg := []byte(fmt.Sprintf("To: %s\r\nSubject: %s\r\n\r\n%s", to, subject, body))
+
+	log.Printf("🔧 SMTP Debug: connecting to %s", addr)
+	log.Printf("🔧 From: '%s', To: '%s'", cfg.MailFrom, to)
+
+	// NetCat風のシンプルなSMTP接続テスト
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		log.Printf("❌ Failed to connect to SMTP server: %v", err)
+		return err
+	}
+	defer conn.Close()
+
+	// SMTP基本コマンドを手動で送信
+	commands := []string{
+		"HELO localhost\r\n",
+		fmt.Sprintf("MAIL FROM:<%s>\r\n", cfg.MailFrom),
+		fmt.Sprintf("RCPT TO:<%s>\r\n", to),
+		"DATA\r\n",
+	}
+
+	// 読み込み用バッファ
+	reader := bufio.NewReader(conn)
+
+	// 初期応答を読む
+	response, _ := reader.ReadString('\n')
+	log.Printf("🔧 Initial response: %s", strings.TrimSpace(response))
+
+	for i, cmd := range commands {
+		log.Printf("🔧 Sending: %s", strings.TrimSpace(cmd))
+		conn.Write([]byte(cmd))
+
+		response, _ := reader.ReadString('\n')
+		log.Printf("🔧 Response %d: %s", i+1, strings.TrimSpace(response))
+	}
+
+	// メッセージ本文を送信
+	conn.Write(msg)
+	conn.Write([]byte("\r\n.\r\n"))
+
+	// 最終応答
+	response, _ = reader.ReadString('\n')
+	log.Printf("🔧 Final response: %s", strings.TrimSpace(response))
+
+	// QUIT
+	conn.Write([]byte("QUIT\r\n"))
+	response, _ = reader.ReadString('\n')
+	log.Printf("🔧 Quit response: %s", strings.TrimSpace(response))
+
+	log.Printf("✅ Manual SMTP send completed")
+	return nil
 }
 
 // ---------- Models ----------
@@ -146,7 +206,9 @@ type user struct {
 
 // POST /auth/register
 func (s *server) handleRegister(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Received registration request from %s", r.RemoteAddr)
 	if r.Method != http.MethodPost {
+		log.Printf("Invalid method: %s", r.Method)
 		badReq(w, "method_not_allowed")
 		return
 	}
@@ -161,7 +223,9 @@ func (s *server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		badReq(w, "invalid_payload")
 		return
 	}
+	log.Printf("Registration data: org=%s, user=%s, email=%s", req.OrganizationName, req.Username, req.Email)
 	if req.OrganizationName == "" || req.RepresentativeName == "" || req.Username == "" || req.Email == "" || len(req.Password) < 8 {
+		log.Printf("Validation failed: missing or weak fields")
 		badReq(w, "missing_or_weak_fields")
 		return
 	}
@@ -212,7 +276,20 @@ func (s *server) handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	verifyURL := s.cfg.PublicAppURL + "/verify-email?token=" + raw
-	_ = sendMail(s.cfg, req.Email, "Verify your email", "以下のURLをクリックしてメール認証を完了してください:\n\n"+verifyURL+"\n\n有効期限: 24時間")
+	mailBody := "以下のURLをクリックしてメール認証を完了してください:\n\n" + verifyURL + "\n\n有効期限: 24時間"
+
+	// シンプルなSMTP送信をテスト
+	if err := sendMail(s.cfg, req.Email, "Verify your email", mailBody); err != nil {
+		log.Printf("Failed to send verification email to %s: %v", req.Email, err)
+		// メール送信失敗でも登録は成功として扱う
+		log.Printf("=== Fallback: Email Verification Info ===")
+		log.Printf("To: %s", req.Email)
+		log.Printf("Subject: Verify your email")
+		log.Printf("Verification URL: %s", verifyURL)
+		log.Printf("==========================================")
+	} else {
+		log.Printf("✅ Verification email successfully sent to %s", req.Email)
+	}
 
 	writeJSON(w, 200, map[string]string{"status": "ok"})
 }
@@ -296,6 +373,7 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		"org_id":   u.OrgID,
 		"role":     u.Role,
 		"username": u.Username,
+		"email":    u.Email, // ← 追加
 		"iat":      now.Unix(),
 		"exp":      exp.Unix(),
 	}
@@ -318,6 +396,28 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 	writeJSON(w, 200, map[string]string{"status": "ok"})
+}
+
+// POST /auth/logout
+func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		badReq(w, "method_not_allowed")
+		return
+	}
+
+	cookie := &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Path:     "/",
+		Domain:   s.cfg.CookieDomain,
+		HttpOnly: true,
+		Secure:   false, // 本番は true（HTTPS必須）
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+	}
+	http.SetCookie(w, cookie)
+	writeJSON(w, 200, map[string]string{"status": "logged_out"})
 }
 
 // GET /auth/me

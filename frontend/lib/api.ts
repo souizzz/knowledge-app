@@ -34,4 +34,35 @@ export async function deleteKnowledge(id: number) {
   await fetch(`${API_URL}/knowledge/${id}`, { method: "DELETE" });
 }
 
+// 認証関連の型定義
+export type MeClaims = {
+  sub: string;
+  org_id: number;
+  role: string;
+  username: string;
+  email?: string;
+  iat: number;
+  exp: number;
+};
+
+// 認証状態取得
+export async function fetchMe(): Promise<MeClaims | null> {
+  try {
+    const res = await fetch("/api/auth/me", { credentials: "include" });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+// ログアウト
+export async function logout(): Promise<boolean> {
+  const res = await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
+  });
+  return res.ok;
+}
+
 
