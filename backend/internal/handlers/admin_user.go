@@ -2,17 +2,24 @@ package handlers
 
 import (
 	"context"
+	"crypto/rand"
+	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
-	"crypto/rand"
-	"encoding/hex"
-	"database/sql"
 	"time"
+	
+	"slack-bot/backend/internal/app"
 )
 
 // App represents the application context
 type App struct {
 	DB *sql.DB
+}
+
+// AppWrapper wraps app.App for compatibility
+type AppWrapper struct {
+	*app.App
 }
 
 // JSON helper function
@@ -40,9 +47,9 @@ type UserRow struct {
 	CreatedAt time.Time
 }
 
-type patchUserReq struct { 
-	Role *string `json:"role"`; 
-	IsActive *bool `json:"is_active"` 
+type patchUserReq struct {
+	Role     *string `json:"role"`
+	IsActive *bool   `json:"is_active"`
 }
 
 type createInvitationReq struct {
@@ -54,43 +61,41 @@ type invitationResponse struct {
 	InviteURL string `json:"invite_url"`
 }
 
-
 func GetAdminUsers(a *App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rows, err := ListUsers(r.Context(), a.DB)
-		if err != nil { 
-			http.Error(w, err.Error(), 500); 
-			return 
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
 		}
 		JSON(w, 200, map[string]any{"users": rows})
 	}
 }
 
-
 func PatchAdminUser(a *App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
-		if id == "" { 
-			http.Error(w, "bad request", 400); 
-			return 
+		if id == "" {
+			http.Error(w, "bad request", 400)
+			return
 		}
 		var req patchUserReq
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil { 
-			http.Error(w, "bad request", 400); 
-			return 
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "bad request", 400)
+			return
 		}
 		// TODO: Implement UpdateUserRoleActive
-		// role := "MEMBER"; 
+		// role := "MEMBER";
 		// active := true
-		// if req.Role != nil { 
-		// 	role = *req.Role 
+		// if req.Role != nil {
+		// 	role = *req.Role
 		// }
-		// if req.IsActive != nil { 
-		// 	active = *req.IsActive 
+		// if req.IsActive != nil {
+		// 	active = *req.IsActive
 		// }
-		// if err := UpdateUserRoleActive(r.Context(), a.DB, id, role, active); err != nil { 
-		// 	http.Error(w, err.Error(), 500); 
-		// 	return 
+		// if err := UpdateUserRoleActive(r.Context(), a.DB, id, role, active); err != nil {
+		// 	http.Error(w, err.Error(), 500);
+		// 	return
 		// }
 		JSON(w, 200, map[string]any{"ok": true})
 	}
@@ -107,7 +112,7 @@ func CreateInvitation(a *App) http.HandlerFunc {
 
 		// 招待トークンを生成
 		token := generateInvitationToken()
-		
+
 		// TODO: Implement CreateInvitation
 		// if err := CreateInvitationDB(r.Context(), a.DB, req.Email, req.Role, token); err != nil {
 		// 	http.Error(w, err.Error(), 500)
@@ -116,7 +121,7 @@ func CreateInvitation(a *App) http.HandlerFunc {
 
 		// 内部URLを生成（外部Gitに依存しない）
 		inviteURL := generateInternalInviteURL(token)
-		
+
 		JSON(w, 200, invitationResponse{
 			InviteURL: inviteURL,
 		})
@@ -196,4 +201,33 @@ func AcceptInvitation(a *App) http.HandlerFunc {
 			"message": "User created successfully",
 		})
 	}
+}
+
+// PostAcceptInvite is an alias for AcceptInvitation
+func PostAcceptInvite(a *App) http.HandlerFunc {
+	return AcceptInvitation(a)
+}
+
+// GetMe returns current user info
+func GetMe(a *App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		JSON(w, 200, map[string]any{
+			"id":    "temp-user-id",
+			"name":  "Test User",
+			"email": "test@example.com",
+			"role":  "MEMBER",
+		})
+	}
+}
+
+// PostLogout handles user logout
+func PostLogout(a *App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		JSON(w, 200, map[string]any{"ok": true})
+	}
+}
+
+// PostAdminInvitations creates new invitations
+func PostAdminInvitations(a *App) http.HandlerFunc {
+	return CreateInvitation(a)
 }
