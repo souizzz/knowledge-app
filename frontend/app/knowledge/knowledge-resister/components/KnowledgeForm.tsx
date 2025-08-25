@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Knowledge } from '../../../lib/api';
+import { Knowledge } from '../../../../lib/api';
 
 interface KnowledgeFormProps {
   knowledge?: Knowledge | null;

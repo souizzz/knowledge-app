@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { deleteKnowledge } from "../../../lib/api";
+import { deleteKnowledge } from "../../../../lib/api";
 
 export default function KnowledgeDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
