@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 const NAV = [
   { href: "/knowledge", label: "ナレッジ管理＆登録" },
   { href: "/seles-metrics", label: "営業数値管理" },
+  { href: "/admin/users", label: "ユーザー管理" },
 ];
 
 export default function Sidebar() {
