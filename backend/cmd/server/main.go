@@ -7,6 +7,7 @@ import (
 
 	"slack-bot/backend/internal/config"
 	"slack-bot/backend/internal/db"
+	"slack-bot/backend/internal/handlers"
 	"slack-bot/backend/internal/knowledge"
 	"slack-bot/backend/internal/slack"
 )
@@ -58,6 +59,13 @@ func main() {
 	http.HandleFunc("/api/knowledge", corsMiddleware(handler.HandleKnowledge))
 	http.HandleFunc("/api/knowledge/", corsMiddleware(handler.HandleKnowledgeByID))
 	http.HandleFunc("/api/ask", corsMiddleware(handler.HandleAsk))
+
+	// Admin API endpoints (内部完結)
+	app := &handlers.App{DB: database}
+	http.HandleFunc("/api/admin/users", corsMiddleware(handlers.GetAdminUsers(app)))
+	http.HandleFunc("/api/admin/invitations", corsMiddleware(handlers.CreateInvitation(app)))
+	http.HandleFunc("/api/auth/invitations", corsMiddleware(handlers.GetInvitation(app)))
+	http.HandleFunc("/api/auth/accept-invite", corsMiddleware(handlers.AcceptInvitation(app)))
 
 	// Slack連携
 	slack.RegisterSlackHandlers(corsMiddleware)
