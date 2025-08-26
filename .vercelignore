@@ -1,0 +1,25 @@
+# Backend files (not needed for frontend deployment)
+backend/
+deploy/
+docker-compose*.yml
+nginx/
+
+# Database files
+db/
+supabase/
+
+# Environment files
+.env*
+!.env.example
+
+# Documentation
+DEPLOYMENT.md
+VERCEL_SUPABASE_DEPLOYMENT.md
+
+# Scripts
+deploy.sh
+setup-env.sh
+
+# Git
+.git/
+.gitignore
