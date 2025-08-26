@@ -1,4 +1,17 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/page": "app/page.js"
+  "/admin/users/page": "app/admin/users/page.js",
+  "/knowledge/knowledge-resister/[id]/page": "app/knowledge/knowledge-resister/[id]/page.js",
+  "/api/admin/invitations/route": "app/api/admin/invitations/route.js",
+  "/invite/[token]/page": "app/invite/[token]/page.js",
+  "/knowledge/page": "app/knowledge/page.js",
+  "/page": "app/page.js",
+  "/knowledge/knowledge-resister/page": "app/knowledge/knowledge-resister/page.js",
+  "/register/page": "app/register/page.js",
+  "/verify-email/page": "app/verify-email/page.js",
+  "/verify-success/page": "app/verify-success/page.js",
+  "/seles-metrics/page": "app/seles-metrics/page.js",
+  "/onboarding/slack-bind/page": "app/onboarding/slack-bind/page.js",
+  "/api/auth/invitations/route": "app/api/auth/invitations/route.js",
+  "/login/page": "app/login/page.js"
 }

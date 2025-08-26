@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createKnowledge } from "../../lib/api";
+import { createKnowledge } from "../../../lib/api";
 import { useRouter } from "next/navigation";
 
 export default function NewKnowledge() {
@@ -11,7 +11,7 @@ export default function NewKnowledge() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createKnowledge({ title, content, created_by: "user" });
+    await createKnowledge({ title, content, user_id: 1 });
     router.push("/");
   };
 

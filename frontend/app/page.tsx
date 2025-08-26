@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchKnowledge, Knowledge } from "../lib/api";
-import { SettingsMenu } from "./settings-menu/SettingsMenu";
+import SettingsMenu from "./settings-menu/SettingsMenu";
 import Link from "next/link";
 
 export default function Home() {
@@ -14,3 +14,4 @@ export default function Home() {
         </div>
     )
 }
+  

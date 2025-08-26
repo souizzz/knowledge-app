@@ -41,7 +41,7 @@ export default function KnowledgeCard({ knowledge }: KnowledgeCardProps) {
         fontSize: "0.75rem",
         color: "#6b7280"
       }}>
-        作成者: {knowledge.created_by} | 作成日: {new Date(knowledge.created_at).toLocaleDateString('ja-JP')}
+        ユーザーID: {knowledge.user_id} | 作成日: {new Date(knowledge.created_at).toLocaleDateString('ja-JP')}
       </div>
       
       <div style={{ marginTop: "1rem" }}>

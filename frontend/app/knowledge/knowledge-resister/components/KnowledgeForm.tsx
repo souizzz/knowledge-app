@@ -12,7 +12,7 @@ interface KnowledgeFormProps {
 export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: KnowledgeFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [createdBy, setCreatedBy] = useState('user');
+  const [userId, setUserId] = useState(1); // Default user ID
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,11 +20,11 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
     if (knowledge) {
       setTitle(knowledge.title);
       setContent(knowledge.content);
-      setCreatedBy(knowledge.created_by || 'user');
+      setUserId(knowledge.user_id || 1);
     } else {
       setTitle('');
       setContent('');
-      setCreatedBy('user');
+      setUserId(1);
     }
     setError(null);
   }, [knowledge]);
@@ -43,7 +43,7 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
     try {
       const knowledgeData = knowledge 
         ? { ...knowledge, title: title.trim(), content: content.trim() }
-        : { title: title.trim(), content: content.trim(), created_by: createdBy.trim() };
+        : { title: title.trim(), content: content.trim(), user_id: userId };
       
       console.log('KnowledgeForm: Submitting data:', knowledgeData);
       
@@ -53,7 +53,7 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
       if (!knowledge) {
         setTitle('');
         setContent('');
-        setCreatedBy('user');
+        setUserId(1);
       }
       
       console.log('KnowledgeForm: Successfully submitted');
@@ -69,7 +69,7 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
   const handleCancel = () => {
     setTitle('');
     setContent('');
-    setCreatedBy('user');
+    setUserId(1);
     setError(null);
     if (onCancel) {
       onCancel();
@@ -161,21 +161,21 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
 
       {!knowledge && (
         <div>
-          <label htmlFor="createdBy" style={{ 
+          <label htmlFor="userId" style={{ 
             display: 'block', 
             marginBottom: '0.5rem',
             fontWeight: '500',
             color: '#374151'
           }}>
-            作成者
+            ユーザーID
           </label>
           <input
-            id="createdBy"
-            type="text"
-            value={createdBy}
-            onChange={(e) => setCreatedBy(e.target.value)}
+            id="userId"
+            type="number"
+            value={userId}
+            onChange={(e) => setUserId(parseInt(e.target.value) || 1)}
             disabled={submitting}
-            placeholder="例: taro"
+            placeholder="例: 1"
             style={{
               width: '100%',
               padding: '0.75rem',

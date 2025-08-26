@@ -1,0 +1,31 @@
+{
+  "name": "slack-bot",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "Slack Bot with Knowledge Management System",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm run start",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status"
+  },
+  "keywords": [
+    "slack",
+    "bot",
+    "knowledge",
+    "management",
+    "nextjs",
+    "supabase"
+  ],
+  "author": "Your Name",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/souizzz/knowledge-app.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

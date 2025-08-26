@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Knowledge } from '../../../lib/api';
+import { Knowledge } from '../../../../lib/api';
 
 interface KnowledgeListProps {
   knowledgeList: Knowledge[];
@@ -101,7 +101,7 @@ export default function KnowledgeList({ knowledgeList, onEdit, onDelete }: Knowl
               color: '#6b7280',
               marginBottom: '0.5rem'
             }}>
-              <span>作成者: {knowledge.created_by}</span>
+              <span>ユーザーID: {knowledge.user_id}</span>
               <span>作成日: {formatDate(knowledge.created_at)}</span>
             </div>
           </div>
