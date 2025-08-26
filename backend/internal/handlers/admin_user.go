@@ -7,8 +7,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
+	"os"
 	"time"
-
+	
 	"slack-bot/backend/internal/app"
 )
 
@@ -36,6 +37,41 @@ func ListUsers(ctx context.Context, db *sql.DB) ([]UserRow, error) {
 	return []UserRow{}, nil
 }
 
+// CreateInvitationDB creates an invitation in the database
+func CreateInvitationDB(ctx context.Context, db *sql.DB, email, role, token string) error {
+	_, err := db.ExecContext(ctx,
+		`INSERT INTO invitations (email, role, token) VALUES ($1, $2, $3)`,
+		email, role, token)
+	return err
+}
+
+// GetInvitationByTokenDB retrieves an invitation by token
+func GetInvitationByTokenDB(ctx context.Context, db *sql.DB, token string) (*Invitation, error) {
+	inv := &Invitation{}
+	err := db.QueryRowContext(ctx,
+		`SELECT id, email, role, token, created_at FROM invitations WHERE token = $1 AND expires_at > NOW() AND accepted_at IS NULL`,
+		token).Scan(&inv.ID, &inv.Email, &inv.Role, &inv.Token, &inv.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return inv, nil
+}
+
+// DeleteInvitationDB deletes an invitation by token
+func DeleteInvitationDB(ctx context.Context, db *sql.DB, token string) error {
+	_, err := db.ExecContext(ctx, `DELETE FROM invitations WHERE token = $1`, token)
+	return err
+}
+
+// CreateUserDB creates a new user
+func CreateUserDB(ctx context.Context, db *sql.DB, name, email, role string) (string, error) {
+	var id string
+	err := db.QueryRowContext(ctx,
+		`INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id::text`,
+		name, email, "temp-password-hash", role).Scan(&id)
+	return id, err
+}
+
 // UserRow represents a user row for admin
 type UserRow struct {
 	ID        string
@@ -45,6 +81,15 @@ type UserRow struct {
 	SlackID   sql.NullString
 	IsActive  bool
 	CreatedAt time.Time
+}
+
+// Invitation represents an invitation
+type Invitation struct {
+	ID        string    `json:"id"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	Token     string    `json:"token"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type patchUserReq struct {
@@ -113,11 +158,11 @@ func CreateInvitation(a *App) http.HandlerFunc {
 		// 招待トークンを生成
 		token := generateInvitationToken()
 
-		// TODO: Implement CreateInvitation
-		// if err := CreateInvitationDB(r.Context(), a.DB, req.Email, req.Role, token); err != nil {
-		// 	http.Error(w, err.Error(), 500)
-		// 	return
-		// }
+		// 招待をデータベースに保存
+		if err := CreateInvitationDB(r.Context(), a.DB, req.Email, req.Role, token); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 
 		// 内部URLを生成（外部Gitに依存しない）
 		inviteURL := generateInternalInviteURL(token)
@@ -137,7 +182,12 @@ func generateInvitationToken() string {
 
 // generateInternalInviteURL は内部で完結する招待URLを生成
 func generateInternalInviteURL(token string) string {
-	return "/invite/" + token
+	// フロントエンドのURLを取得（環境変数から）
+	baseURL := os.Getenv("FRONTEND_URL")
+	if baseURL == "" {
+		baseURL = "http://localhost:3000"
+	}
+	return baseURL + "/invite/" + token
 }
 
 // GetInvitation は招待情報を取得（内部完結）
@@ -149,16 +199,15 @@ func GetInvitation(a *App) http.HandlerFunc {
 			return
 		}
 
-		// TODO: Implement GetInvitationByToken
-		// invitation, err := GetInvitationByTokenDB(r.Context(), a.DB, token)
-		// if err != nil {
-		// 	http.Error(w, "invitation not found", 404)
-		// 	return
-		// }
+		invitation, err := GetInvitationByTokenDB(r.Context(), a.DB, token)
+		if err != nil {
+			http.Error(w, "invitation not found", 404)
+			return
+		}
 
 		JSON(w, 200, map[string]any{
-			"email": "test@example.com",
-			"role":  "MEMBER",
+			"email": invitation.Email,
+			"role":  invitation.Role,
 		})
 	}
 }

@@ -35,10 +35,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/login/layout.js"
     ],
-    "/_not-found/page": [
+    "/invite/[token]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/invite/[token]/page.js"
     ]
   }
 }
