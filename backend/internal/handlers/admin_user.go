@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 	"time"
-	
+
 	"slack-bot/backend/internal/app"
 )
 

@@ -1,7 +1,4 @@
 {
-  "/page": "app/page.js",
-  "/admin/users/page": "app/admin/users/page.js",
-  "/knowledge/page": "app/knowledge/page.js",
-  "/invite/[token]/page": "app/invite/[token]/page.js",
-  "/login/page": "app/login/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js"
 }
