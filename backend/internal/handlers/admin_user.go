@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-	
+
 	"slack-bot/backend/internal/app"
 )
 

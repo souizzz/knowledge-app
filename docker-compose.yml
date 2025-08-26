@@ -59,11 +59,7 @@ services:
         condition: service_healthy
     environment:
       PORT: 8080
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: user
-      DB_PASSWORD: password
-      DB_NAME: slackbot
+      DATABASE_URL: postgres://user:password@db:5432/slackbot?sslmode=disable
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       SLACK_SIGNING_SECRET: ${SLACK_SIGNING_SECRET:-}
       SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:-}
