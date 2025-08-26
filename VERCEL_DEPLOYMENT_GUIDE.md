@@ -25,8 +25,13 @@
    - **Framework Preset**: Next.js
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
-   - **Output Directory**: `.next`
+   - **Output Directory**: `.next` (自動検出)
    - **Install Command**: `npm install`
+
+   **重要な注意事項**:
+   - vercel.jsonは不要（自動検出のため削除済み）
+   - standalone出力は無効化済み
+   - 環境変数は必ずVercelダッシュボードで設定
 
 ### **Step 2: 環境変数の設定**
 
