@@ -32,6 +32,8 @@
    - vercel.jsonは不要（自動検出のため削除済み）
    - standalone出力は無効化済み
    - 環境変数は必ずVercelダッシュボードで設定
+   - **パッケージマネージャー**: npmを使用（yarn.lock削除済み）
+   - **.npmrc**: package-manager=npmで明示的に設定
 
 ### **Step 2: 環境変数の設定**
 
