@@ -98,3 +98,4 @@ docker compose up --build
 - **Frontend**: Next.js, React
 - **AI**: OpenAI API (GPT-4, text-embedding-3-small)
 - **Infrastructure**: Docker, Docker Compose
+# Force Vercel redeploy
