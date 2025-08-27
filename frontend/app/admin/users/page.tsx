@@ -76,7 +76,11 @@ export default function AdminUsersPage() {
           <option value='OWNER'>OWNER</option>
         </select>
         <button 
-          onClick={invite} 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            invite();
+          }} 
           disabled={!email}
           style={{ 
             padding: '0.5rem 1rem', 
@@ -84,7 +88,34 @@ export default function AdminUsersPage() {
             color: 'white', 
             border: 'none', 
             borderRadius: '4px', 
-            cursor: !email ? 'not-allowed' : 'pointer' 
+            cursor: !email ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+            userSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            minHeight: '36px'
+          }}
+          onMouseOver={(e) => {
+            if (email) {
+              e.currentTarget.style.backgroundColor = '#0056b3';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }
+          }}
+          onMouseOut={(e) => {
+            if (email) {
+              e.currentTarget.style.backgroundColor = '#007bff';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }
+          }}
+          onTouchStart={(e) => {
+            if (email) {
+              e.currentTarget.style.transform = 'scale(0.95)';
+            }
+          }}
+          onTouchEnd={(e) => {
+            if (email) {
+              e.currentTarget.style.transform = 'scale(1)';
+            }
           }}
         >
           招待
@@ -136,14 +167,38 @@ export default function AdminUsersPage() {
               </td>
               <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
                 <button 
-                  onClick={() => save(u)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    save(u);
+                  }}
                   style={{ 
                     padding: '0.25rem 0.5rem', 
                     backgroundColor: '#28a745', 
                     color: 'white', 
                     border: 'none', 
                     borderRadius: '4px', 
-                    cursor: 'pointer' 
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                    userSelect: 'none',
+                    WebkitTapHighlightColor: 'transparent',
+                    minHeight: '28px',
+                    minWidth: '50px'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1e7e34';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#28a745';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                  onTouchStart={(e) => {
+                    e.currentTarget.style.transform = 'scale(0.95)';
+                  }}
+                  onTouchEnd={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                 >
                   保存

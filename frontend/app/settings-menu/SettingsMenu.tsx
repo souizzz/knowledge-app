@@ -46,10 +46,14 @@ export default function SettingsMenu() {
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", zIndex: 1000 }}>
       <button
         ref={(el) => { btnRef = el; }}
-        onClick={() => setOpen((v) => !v)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
         aria-haspopup="menu"
         aria-expanded={open}
         style={{
@@ -62,14 +66,25 @@ export default function SettingsMenu() {
           fontSize: "14px",
           backgroundColor: "white",
           cursor: "pointer",
-          transition: "background-color 0.2s",
+          transition: "all 0.2s ease",
+          outline: "none",
+          userSelect: "none",
+          WebkitTapHighlightColor: "transparent",
         }}
         title="設定"
         onMouseEnter={(e) => {
-          (e.target as HTMLElement).style.backgroundColor = "#f9fafb";
+          e.currentTarget.style.backgroundColor = "#f9fafb";
+          e.currentTarget.style.transform = "scale(1.05)";
         }}
         onMouseLeave={(e) => {
-          (e.target as HTMLElement).style.backgroundColor = "white";
+          e.currentTarget.style.backgroundColor = "white";
+          e.currentTarget.style.transform = "scale(1)";
+        }}
+        onTouchStart={(e) => {
+          e.currentTarget.style.transform = "scale(0.95)";
+        }}
+        onTouchEnd={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
         }}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
@@ -91,7 +106,8 @@ export default function SettingsMenu() {
             backgroundColor: "white",
             padding: "12px",
             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-            zIndex: 1000,
+            zIndex: 1001,
+            animation: "fadeIn 0.2s ease-out",
           }}
         >
           <div style={{ marginBottom: "8px", fontSize: "12px", color: "#6b7280" }}>
@@ -108,7 +124,11 @@ export default function SettingsMenu() {
             {email ?? "（メール情報なし）"}
           </div>
           <button
-            onClick={onLogout}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onLogout();
+            }}
             disabled={isLoggingOut}
             style={{
               width: "100%",
@@ -119,17 +139,32 @@ export default function SettingsMenu() {
               fontSize: "14px",
               backgroundColor: isLoggingOut ? "#f3f4f6" : "white",
               cursor: isLoggingOut ? "not-allowed" : "pointer",
-              transition: "background-color 0.2s",
+              transition: "all 0.2s ease",
               opacity: isLoggingOut ? 0.6 : 1,
+              outline: "none",
+              userSelect: "none",
+              WebkitTapHighlightColor: "transparent",
             }}
             onMouseEnter={(e) => {
               if (!isLoggingOut) {
-                (e.target as HTMLElement).style.backgroundColor = "#f9fafb";
+                e.currentTarget.style.backgroundColor = "#f9fafb";
+                e.currentTarget.style.transform = "translateX(2px)";
               }
             }}
             onMouseLeave={(e) => {
               if (!isLoggingOut) {
-                (e.target as HTMLElement).style.backgroundColor = "white";
+                e.currentTarget.style.backgroundColor = "white";
+                e.currentTarget.style.transform = "translateX(0)";
+              }
+            }}
+            onTouchStart={(e) => {
+              if (!isLoggingOut) {
+                e.currentTarget.style.transform = "scale(0.98)";
+              }
+            }}
+            onTouchEnd={(e) => {
+              if (!isLoggingOut) {
+                e.currentTarget.style.transform = "scale(1)";
               }
             }}
           >
@@ -137,6 +172,19 @@ export default function SettingsMenu() {
           </button>
         </div>
       )}
+      
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

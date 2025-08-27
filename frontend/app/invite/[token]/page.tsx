@@ -68,7 +68,11 @@ export default function InvitePage({ params }: { params: { token: string } }) {
         />
       </div>
       <button 
-        onClick={accept} 
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          accept();
+        }} 
         disabled={!name}
         style={{ 
           padding: "0.75rem 1.5rem", 
@@ -77,7 +81,34 @@ export default function InvitePage({ params }: { params: { token: string } }) {
           border: "none", 
           borderRadius: "4px", 
           cursor: !name ? "not-allowed" : "pointer",
-          fontSize: "1rem"
+          fontSize: "1rem",
+          transition: 'all 0.2s ease',
+          outline: 'none',
+          userSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
+          minHeight: '44px'
+        }}
+        onMouseOver={(e) => {
+          if (name) {
+            e.currentTarget.style.backgroundColor = '#0056b3';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }
+        }}
+        onMouseOut={(e) => {
+          if (name) {
+            e.currentTarget.style.backgroundColor = '#007bff';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }
+        }}
+        onTouchStart={(e) => {
+          if (name) {
+            e.currentTarget.style.transform = 'scale(0.98)';
+          }
+        }}
+        onTouchEnd={(e) => {
+          if (name) {
+            e.currentTarget.style.transform = 'scale(1)';
+          }
         }}
       >
         登録して開始

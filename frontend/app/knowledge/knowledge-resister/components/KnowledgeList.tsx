@@ -124,7 +124,11 @@ export default function KnowledgeList({ knowledgeList, onEdit, onDelete }: Knowl
             justifyContent: 'flex-end'
           }}>
             <button
-              onClick={() => onEdit(knowledge)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit(knowledge);
+              }}
               disabled={deletingId === knowledge.id}
               style={{
                 padding: '0.5rem 1rem',
@@ -135,16 +139,33 @@ export default function KnowledgeList({ knowledgeList, onEdit, onDelete }: Knowl
                 fontSize: '0.875rem',
                 cursor: deletingId === knowledge.id ? 'not-allowed' : 'pointer',
                 opacity: deletingId === knowledge.id ? 0.5 : 1,
-                transition: 'all 0.2s'
+                transition: 'all 0.2s ease',
+                outline: 'none',
+                userSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: '36px',
+                minWidth: '60px'
               }}
               onMouseOver={(e) => {
                 if (deletingId !== knowledge.id) {
                   e.currentTarget.style.backgroundColor = '#e5e7eb';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
                 }
               }}
               onMouseOut={(e) => {
                 if (deletingId !== knowledge.id) {
                   e.currentTarget.style.backgroundColor = '#f3f4f6';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }
+              }}
+              onTouchStart={(e) => {
+                if (deletingId !== knowledge.id) {
+                  e.currentTarget.style.transform = 'scale(0.95)';
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (deletingId !== knowledge.id) {
+                  e.currentTarget.style.transform = 'scale(1)';
                 }
               }}
             >
@@ -152,7 +173,11 @@ export default function KnowledgeList({ knowledgeList, onEdit, onDelete }: Knowl
             </button>
             
             <button
-              onClick={() => handleDelete(knowledge)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleDelete(knowledge);
+              }}
               disabled={deletingId === knowledge.id}
               style={{
                 padding: '0.5rem 1rem',
@@ -162,16 +187,33 @@ export default function KnowledgeList({ knowledgeList, onEdit, onDelete }: Knowl
                 borderRadius: '0.25rem',
                 fontSize: '0.875rem',
                 cursor: deletingId === knowledge.id ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.2s'
+                transition: 'all 0.2s ease',
+                outline: 'none',
+                userSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: '36px',
+                minWidth: '60px'
               }}
               onMouseOver={(e) => {
                 if (deletingId !== knowledge.id) {
                   e.currentTarget.style.backgroundColor = '#dc2626';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
                 }
               }}
               onMouseOut={(e) => {
                 if (deletingId !== knowledge.id) {
                   e.currentTarget.style.backgroundColor = '#ef4444';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }
+              }}
+              onTouchStart={(e) => {
+                if (deletingId !== knowledge.id) {
+                  e.currentTarget.style.transform = 'scale(0.95)';
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (deletingId !== knowledge.id) {
+                  e.currentTarget.style.transform = 'scale(1)';
                 }
               }}
             >

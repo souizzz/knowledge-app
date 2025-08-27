@@ -203,7 +203,33 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
             fontSize: '1rem',
             fontWeight: '500',
             cursor: submitting ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.2s'
+            transition: 'all 0.2s ease',
+            outline: 'none',
+            userSelect: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            minHeight: '44px'
+          }}
+          onMouseOver={(e) => {
+            if (!submitting && title.trim() && content.trim()) {
+              e.currentTarget.style.backgroundColor = '#2563eb';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }
+          }}
+          onMouseOut={(e) => {
+            if (!submitting && title.trim() && content.trim()) {
+              e.currentTarget.style.backgroundColor = '#3b82f6';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }
+          }}
+          onTouchStart={(e) => {
+            if (!submitting && title.trim() && content.trim()) {
+              e.currentTarget.style.transform = 'scale(0.98)';
+            }
+          }}
+          onTouchEnd={(e) => {
+            if (!submitting && title.trim() && content.trim()) {
+              e.currentTarget.style.transform = 'scale(1)';
+            }
           }}
         >
           {submitting ? '処理中...' : (knowledge ? '更新する' : '追加する')}
@@ -212,7 +238,11 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
         {knowledge && onCancel && (
           <button
             type="button"
-            onClick={handleCancel}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleCancel();
+            }}
             disabled={submitting}
             style={{
               padding: '0.75rem 1.5rem',
@@ -223,7 +253,33 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
               fontSize: '1rem',
               fontWeight: '500',
               cursor: submitting ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.2s'
+              transition: 'all 0.2s ease',
+              outline: 'none',
+              userSelect: 'none',
+              WebkitTapHighlightColor: 'transparent',
+              minHeight: '44px'
+            }}
+            onMouseOver={(e) => {
+              if (!submitting) {
+                e.currentTarget.style.backgroundColor = '#f9fafb';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!submitting) {
+                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
+            onTouchStart={(e) => {
+              if (!submitting) {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }
+            }}
+            onTouchEnd={(e) => {
+              if (!submitting) {
+                e.currentTarget.style.transform = 'scale(1)';
+              }
             }}
           >
             キャンセル
