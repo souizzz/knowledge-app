@@ -11,14 +11,23 @@ export default function LoginPage() {
   })
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [debugInfo, setDebugInfo] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setMessage('')
+    setDebugInfo('')
     
     try {
+      // デバッグ情報を追加
+      console.log('Attempting login with:', { email: formData.email, passwordLength: formData.password.length })
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+      console.log('Supabase Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      
+      setDebugInfo(`Connecting to: ${process.env.NEXT_PUBLIC_SUPABASE_URL || 'Using fallback URL'}`)
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -26,21 +35,27 @@ export default function LoginPage() {
 
       if (error) {
         console.error('Login error:', error)
+        setDebugInfo(`Error details: ${error.message}`)
         if (error.message.includes('Email not confirmed')) {
           setMessage('メールアドレスの認証が完了していません。')
         } else if (error.message.includes('Invalid login credentials')) {
           setMessage('メールアドレスまたはパスワードが正しくありません。')
+        } else if (error.message.includes('fetch')) {
+          setMessage('ネットワーク接続エラーが発生しました。Supabaseの設定を確認してください。')
         } else {
           setMessage(`ログインエラー: ${error.message}`)
         }
       } else if (data.user) {
+        console.log('Login successful:', data.user)
         setMessage('ログイン成功')
+        setDebugInfo('認証成功、リダイレクト中...')
         setTimeout(() => {
           router.push('/')
         }, 1000)
       }
     } catch (error) {
       console.error('Network error:', error)
+      setDebugInfo(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setMessage('ネットワークエラーが発生しました。')
     } finally {
       setIsLoading(false)
@@ -200,6 +215,21 @@ export default function LoginPage() {
               borderRadius: '0.375rem'
             }}>
               {message}
+            </div>
+          )}
+
+          {debugInfo && (
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#6b7280',
+              padding: '0.5rem',
+              backgroundColor: '#f3f4f6',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.375rem',
+              fontFamily: 'monospace'
+            }}>
+              <strong>デバッグ情報:</strong><br />
+              {debugInfo}
             </div>
           )}
 
