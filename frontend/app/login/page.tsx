@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '../../lib/supabase'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   })
   const [message, setMessage] = useState('')
@@ -15,32 +16,31 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setMessage('')
     
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
       })
 
-      const data = await response.json()
-      
-      if (response.ok) {
+      if (error) {
+        console.error('Login error:', error)
+        if (error.message.includes('Email not confirmed')) {
+          setMessage('メールアドレスの認証が完了していません。')
+        } else if (error.message.includes('Invalid login credentials')) {
+          setMessage('メールアドレスまたはパスワードが正しくありません。')
+        } else {
+          setMessage(`ログインエラー: ${error.message}`)
+        }
+      } else if (data.user) {
         setMessage('ログイン成功')
         setTimeout(() => {
           router.push('/')
         }, 1000)
-      } else {
-        if (response.status === 403) {
-          setMessage('メールアドレスの認証が完了していません。')
-        } else {
-          setMessage('ユーザー名またはパスワードが正しくありません。')
-        }
       }
     } catch (error) {
+      console.error('Network error:', error)
       setMessage('ネットワークエラーが発生しました。')
     } finally {
       setIsLoading(false)
@@ -55,64 +55,170 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#f9fafb',
+      padding: '1rem'
+    }}>
+      <div style={{
+        maxWidth: '400px',
+        width: '100%',
+        backgroundColor: 'white',
+        padding: '2rem',
+        borderRadius: '0.5rem',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h2 style={{
+            fontSize: '1.875rem',
+            fontWeight: '800',
+            color: '#1f2937',
+            margin: 0
+          }}>
             ログイン
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                ユーザー名
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={formData.username}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                パスワード
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div>
+            <label htmlFor="email" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              color: '#374151',
+              marginBottom: '0.5rem'
+            }}>
+              メールアドレス
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              disabled={isLoading}
+              placeholder="example@email.com"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                fontSize: '1rem',
+                backgroundColor: isLoading ? '#f3f4f6' : 'white',
+                boxSizing: 'border-box'
+              }}
+            />
           </div>
 
           <div>
-            <button
-              type="submit"
+            <label htmlFor="password" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              color: '#374151',
+              marginBottom: '0.5rem'
+            }}>
+              パスワード
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              value={formData.password}
+              onChange={handleChange}
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {isLoading ? 'ログイン中...' : 'ログイン'}
-            </button>
+              placeholder="パスワードを入力"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                fontSize: '1rem',
+                backgroundColor: isLoading ? '#f3f4f6' : 'white',
+                boxSizing: 'border-box'
+              }}
+            />
           </div>
 
+          <button
+            type="submit"
+            disabled={isLoading || !formData.email.trim() || !formData.password.trim()}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              backgroundColor: isLoading ? '#9ca3af' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.375rem',
+              fontSize: '1rem',
+              fontWeight: '500',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+              userSelect: 'none',
+              WebkitTapHighlightColor: 'transparent'
+            }}
+            onMouseOver={(e) => {
+              if (!isLoading && formData.email.trim() && formData.password.trim()) {
+                e.currentTarget.style.backgroundColor = '#2563eb';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!isLoading && formData.email.trim() && formData.password.trim()) {
+                e.currentTarget.style.backgroundColor = '#3b82f6';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
+            onTouchStart={(e) => {
+              if (!isLoading && formData.email.trim() && formData.password.trim()) {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }
+            }}
+            onTouchEnd={(e) => {
+              if (!isLoading && formData.email.trim() && formData.password.trim()) {
+                e.currentTarget.style.transform = 'scale(1)';
+              }
+            }}
+          >
+            {isLoading ? 'ログイン中...' : 'ログイン'}
+          </button>
+
           {message && (
-            <div className={`text-center text-sm ${message.includes('成功') ? 'text-green-600' : 'text-red-600'}`}>
+            <div style={{
+              textAlign: 'center',
+              fontSize: '0.875rem',
+              color: message.includes('成功') ? '#059669' : '#dc2626',
+              padding: '0.75rem',
+              backgroundColor: message.includes('成功') ? '#d1fae5' : '#fee2e2',
+              border: `1px solid ${message.includes('成功') ? '#a7f3d0' : '#fca5a5'}`,
+              borderRadius: '0.375rem'
+            }}>
               {message}
             </div>
           )}
 
-          <div className="text-center">
-            <a href="/register" className="text-blue-600 hover:text-blue-500">
+          <div style={{ textAlign: 'center' }}>
+            <a 
+              href="/register" 
+              style={{
+                color: '#3b82f6',
+                textDecoration: 'none',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.color = '#2563eb';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.color = '#3b82f6';
+              }}
+            >
               新規登録はこちら
             </a>
           </div>
