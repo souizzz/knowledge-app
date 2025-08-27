@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Knowledge } from '../../../lib/api';
+import { Knowledge, fetchKnowledge, createKnowledge, deleteKnowledge } from '../../../lib/api';
 import KnowledgeList from './components/KnowledgeList';
 import KnowledgeForm from './components/KnowledgeForm';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function KnowledgePage() {
   const [knowledgeList, setKnowledgeList] = useState<Knowledge[]>([]);
@@ -14,21 +12,12 @@ export default function KnowledgePage() {
   const [editingKnowledge, setEditingKnowledge] = useState<Knowledge | null>(null);
 
   // Fetch all knowledge entries
-  const fetchKnowledge = async () => {
+  const fetchKnowledgeData = async () => {
     try {
       setLoading(true);
-      console.log('Fetching knowledge from:', `${API_URL}/api/knowledge`);
+      console.log('Fetching knowledge from Supabase');
       
-      const response = await fetch(`${API_URL}/api/knowledge`);
-      console.log('Fetch response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Fetch error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-      
-      const data = await response.json();
+      const data = await fetchKnowledge();
       console.log('Fetched knowledge data:', data);
       setKnowledgeList(data || []);
       setError(null);
@@ -43,29 +32,11 @@ export default function KnowledgePage() {
   };
 
   // Create new knowledge entry
-  const createKnowledge = async (knowledge: Omit<Knowledge, 'id' | 'created_at'>) => {
+  const createKnowledgeEntry = async (knowledge: Omit<Knowledge, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       console.log('Creating knowledge with data:', knowledge);
-      console.log('API URL:', `${API_URL}/api/knowledge`);
       
-      const response = await fetch(`${API_URL}/api/knowledge`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(knowledge),
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const newKnowledge = await response.json();
+      const newKnowledge = await createKnowledge(knowledge);
       console.log('Created knowledge:', newKnowledge);
       setKnowledgeList(prev => [newKnowledge, ...prev]);
       setError(null); // Clear any previous errors
@@ -79,24 +50,24 @@ export default function KnowledgePage() {
   };
 
   // Update knowledge entry
-  const updateKnowledge = async (knowledge: Knowledge) => {
+  const updateKnowledgeEntry = async (knowledge: Knowledge) => {
     try {
-      const response = await fetch(`${API_URL}/api/knowledge/${knowledge.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Supabaseのupdate機能を使用
+      const { data: updatedKnowledge, error } = await import('../../../lib/supabase').then(m => m.supabase)
+        .from('knowledge')
+        .update({
           title: knowledge.title,
           content: knowledge.content,
-        }),
-      });
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', knowledge.id)
+        .select()
+        .single();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        throw new Error(error.message);
       }
 
-      const updatedKnowledge = await response.json();
       setKnowledgeList(prev => 
         prev.map(k => k.id === knowledge.id ? updatedKnowledge : k)
       );
@@ -110,16 +81,9 @@ export default function KnowledgePage() {
   };
 
   // Delete knowledge entry
-  const deleteKnowledge = async (id: number) => {
+  const deleteKnowledgeEntry = async (id: number) => {
     try {
-      const response = await fetch(`${API_URL}/api/knowledge/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      await deleteKnowledge(id);
       setKnowledgeList(prev => prev.filter(k => k.id !== id));
       setEditingKnowledge(null);
     } catch (err) {
@@ -130,7 +94,7 @@ export default function KnowledgePage() {
   };
 
   useEffect(() => {
-    fetchKnowledge();
+    fetchKnowledgeData();
   }, []);
 
   return (
@@ -155,7 +119,7 @@ export default function KnowledgePage() {
           ナレッジ管理
         </h1>
         <button
-          onClick={() => fetchKnowledge()}
+          onClick={() => fetchKnowledgeData()}
           disabled={loading}
           style={{
             padding: '0.5rem 1rem',
@@ -164,7 +128,18 @@ export default function KnowledgePage() {
             border: 'none',
             borderRadius: '0.375rem',
             cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.5 : 1
+            opacity: loading ? 0.5 : 1,
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = '#2563eb';
+            }
+          }}
+          onMouseOut={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = '#3b82f6';
+            }
           }}
         >
           {loading ? '読み込み中...' : '更新'}
@@ -197,7 +172,7 @@ export default function KnowledgePage() {
           </h2>
           <KnowledgeForm
             knowledge={editingKnowledge}
-            onSubmit={editingKnowledge ? updateKnowledge : createKnowledge}
+            onSubmit={editingKnowledge ? updateKnowledgeEntry : createKnowledgeEntry}
             onCancel={() => setEditingKnowledge(null)}
           />
         </div>
@@ -224,7 +199,7 @@ export default function KnowledgePage() {
             <KnowledgeList
               knowledgeList={knowledgeList}
               onEdit={setEditingKnowledge}
-              onDelete={deleteKnowledge}
+              onDelete={deleteKnowledgeEntry}
             />
           )}
         </div>
