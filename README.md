@@ -100,3 +100,4 @@ docker compose up --build
 - **Infrastructure**: Docker, Docker Compose
 # Force Vercel redeploy
 # Vercel deployment fix - 2025年 8月27日 水曜日 16時23分46秒 JST
+# Domain configuration update - 2025年 8月27日 水曜日 16時32分01秒 JST
