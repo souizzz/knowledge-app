@@ -40,12 +40,14 @@
 
 Vercelダッシュボード > Settings > Environment Variables で以下を設定：
 
-#### **Supabase設定**
+#### **Supabase設定（必須）**
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
+
+**重要**: これらの環境変数が設定されていないとビルドエラーが発生します。
 
 #### **フロントエンド設定**
 ```
