@@ -99,3 +99,4 @@ docker compose up --build
 - **AI**: OpenAI API (GPT-4, text-embedding-3-small)
 - **Infrastructure**: Docker, Docker Compose
 # Force Vercel redeploy
+# Vercel deployment fix - 2025年 8月27日 水曜日 16時23分46秒 JST
