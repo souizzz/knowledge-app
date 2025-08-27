@@ -51,7 +51,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 #### **フロントエンド設定**
 ```
-NEXT_PUBLIC_FRONTEND_URL=https://your-domain.vercel.app
+NEXT_PUBLIC_FRONTEND_URL=https://sales-develop.com
 ```
 
 #### **OpenAI設定**
@@ -110,8 +110,8 @@ git push origin main
 ## 📊 デプロイ後の確認
 
 ### **動作確認**
-1. **フロントエンド**: https://your-domain.vercel.app
-2. **API**: https://your-domain.vercel.app/api/health
+1. **フロントエンド**: https://sales-develop.com
+2. **API**: https://sales-develop.com/api/health
 3. **Supabase連携**: データベース接続テスト
 
 ### **ログ確認**

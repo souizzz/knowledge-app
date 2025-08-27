@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create invitation' }, { status: 500 })
     }
 
-    const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://your-domain.vercel.app'
+    const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://sales-develop.com'
     const inviteUrl = `${frontendUrl}/invite/${token}`
 
     return NextResponse.json({
