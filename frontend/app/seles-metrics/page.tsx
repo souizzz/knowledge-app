@@ -60,7 +60,11 @@ export default function SalesForm(){
             .gte('report_date', fromStr)
             .order('report_date', { ascending: false })
             .then(({ data, error }) => {
-                if(error) {setError(error.message); return }
+                if(error) {
+                    console.warn('Sales forms table not found or error:', error.message);
+                    setHistory([]);
+                    return;
+                }
                 setHistory((data as Report[]) ?? [])
                 const today = (data as Report[])?.find(r => r.report_date === date)
                 if(today) {
@@ -93,15 +97,24 @@ export default function SalesForm(){
             .select()
 
         setLoading(false)
-        if(error) {setError(error.message); return}
+        if(error) {
+            console.error('Failed to save sales data:', error.message);
+            setError('データの保存に失敗しました。テーブルが存在しない可能性があります。');
+            return;
+        }
 
         const from = new Date(date); from.setDate(from.getDate() -14)
-        const { data: refeched} = await supabase
+        const { data: refeched, error: refetchError} = await supabase
             .from('sales_forms')
             .select('id, report_date, calls, connects, docs_sent, apointments')
             .gte('report_date', fmtDate(from))
             .order('report_date', { ascending: false })
-        setHistory((refeched as Report[]) ?? [])
+        
+        if (refetchError) {
+            console.warn('Failed to refetch sales data:', refetchError.message);
+        } else {
+            setHistory((refeched as Report[]) ?? [])
+        }
     }
         
     return (
