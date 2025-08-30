@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+export const revalidate = 0
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ranfnqwqbunalbptruum.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbmZucXdxYnVuYWxicHRydXVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjIyODUzOCwiZXhwIjoyMDcxODA0NTM4fQ.fHvcpzrRTu8ugp6APGpa45NWpgSwQNQeAsfKqA0z2O0'
@@ -11,12 +12,19 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJ
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function GET(request: NextRequest) {
+  // Prevent static rendering by using dynamic data
+  const timestamp = Date.now()
+  
   try {
-    const { searchParams } = request.nextUrl
-    const token = searchParams.get('token')
+    // Use headers instead of URL to avoid static rendering issues
+    const url = new URL(request.url)
+    const token = url.searchParams.get('token')
 
     if (!token) {
-      return NextResponse.json({ error: 'Token required' }, { status: 400 })
+      return NextResponse.json({ 
+        error: 'Token required',
+        timestamp 
+      }, { status: 400 })
     }
 
     const { data: invitation, error } = await supabase
@@ -28,15 +36,22 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (error || !invitation) {
-      return NextResponse.json({ error: 'Invitation not found' }, { status: 404 })
+      return NextResponse.json({ 
+        error: 'Invitation not found',
+        timestamp 
+      }, { status: 404 })
     }
 
     return NextResponse.json({
       email: invitation.email,
-      role: invitation.role
+      role: invitation.role,
+      timestamp
     })
   } catch (error) {
     console.error('Error fetching invitation:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      timestamp: Date.now()
+    }, { status: 500 })
   }
 }

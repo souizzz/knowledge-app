@@ -57,7 +57,7 @@ export default function Home() {
                     ナレッジ管理&登録
                 </Link>
                 <Link 
-                    href={"/seles-metrics?v=v2.1.0&cb=" + Date.now()}
+                    href={"/seles-metrics?v=v2.2.0&cb=" + Date.now()}
                     style={{
                         display: "block",
                         padding: "1rem 1.5rem",

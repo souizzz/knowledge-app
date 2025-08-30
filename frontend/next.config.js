@@ -18,6 +18,10 @@ const nextConfig = {
         return [];
     },
     
+    // 静的生成を無効化
+    trailingSlash: false,
+    skipTrailingSlashRedirect: true,
+    
     // CORS設定を追加
     async headers() {
       return [

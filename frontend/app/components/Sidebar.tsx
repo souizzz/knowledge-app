@@ -6,7 +6,7 @@ import { useState } from "react";
 
 const NAV = [
   { href: "/knowledge/knowledge-resister", label: "ナレッジ管理＆登録" },
-  { href: "/seles-metrics?v=v2.1.0&cb=" + Date.now(), label: "営業数値管理" },
+  { href: "/seles-metrics?v=v2.2.0&cb=" + Date.now(), label: "営業数値管理" },
   { href: "/admin/users", label: "ユーザー管理" },
 ];
 
