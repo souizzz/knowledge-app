@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const NAV = [
-  { href: "/knowledge", label: "ナレッジ管理＆登録" },
+  { href: "/knowledge/knowledge-resister", label: "ナレッジ管理＆登録" },
   { href: "/seles-metrics", label: "営業数値管理" },
   { href: "/admin/users", label: "ユーザー管理" },
 ];
