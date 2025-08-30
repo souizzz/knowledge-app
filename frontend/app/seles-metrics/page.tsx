@@ -28,6 +28,9 @@ export default function SalesForm(){
     const [me, setMe] = useState<string | null>(null)
     const [history, setHistory] = useState<Report[]>([])
     const canSubmit = me && calls > 0 && connects > 0 && docsSent > 0 && apointments > 0 && !!date
+    
+    // Version info for cache busting
+    const VERSION = "v2.0.0"
 
     //認証状態と直近の履歴を確認
     useEffect(() => {
@@ -62,16 +65,21 @@ export default function SalesForm(){
             .then(({ data, error }) => {
                 if(error) {
                     console.warn('Sales forms table not found or error:', error.message);
+                    console.log('Debug: Using new sales_forms table implementation');
                     setHistory([]);
                     return;
                 }
+                console.log('Debug: Successfully fetched sales data:', data?.length || 0, 'records');
                 setHistory((data as Report[]) ?? [])
                 const today = (data as Report[])?.find(r => r.report_date === date)
                 if(today) {
+                    console.log('Debug: Found today data:', today);
                     setCalls(today.calls)
                     setConnects(today.connects)
                     setDocsSent(today.docs_sent)
                     setApointments(today.apointments)
+                } else {
+                    console.log('Debug: No data found for today:', date);
                 }
             })
     }, [me, date])
@@ -119,6 +127,19 @@ export default function SalesForm(){
         
     return (
         <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#1f2937' }}>
+                営業数値管理 {VERSION}
+            </h1>
+            <div style={{ 
+                padding: '0.5rem', 
+                backgroundColor: '#f3f4f6', 
+                borderRadius: '0.5rem', 
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                marginBottom: '1rem'
+            }}>
+                <strong>デバッグ情報:</strong> バージョン {VERSION} | 最終更新: {new Date().toLocaleString('ja-JP')}
+            </div>
             <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} style={{ display: 'grid', gap: '1rem' }}>
                 <label>
                     日付
