@@ -8,6 +8,11 @@ const nextConfig = {
         return `build-${Date.now()}`;
     },
     
+    // APIルートの動的レンダリングを強制
+    experimental: {
+        serverComponentsExternalPackages: ['@supabase/supabase-js']
+    },
+    
     // CORS設定を追加
     async headers() {
       return [
