@@ -13,6 +13,11 @@ const nextConfig = {
         serverComponentsExternalPackages: ['@supabase/supabase-js']
     },
     
+    // すべてのAPIルートを動的レンダリングに強制
+    async rewrites() {
+        return [];
+    },
+    
     // CORS設定を追加
     async headers() {
       return [
