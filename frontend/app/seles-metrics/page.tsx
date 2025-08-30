@@ -31,7 +31,18 @@ export default function SalesForm(){
     const canSubmit = me && calls > 0 && connects > 0 && docsSent > 0 && apointments > 0 && !!date
     
     // Version info for cache busting
-    const VERSION = "v2.0.0"
+    const VERSION = "v2.1.0"
+    const CACHE_BUST = Date.now()
+
+    // Force cache busting by updating URL
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.set('v', VERSION);
+            url.searchParams.set('cb', CACHE_BUST.toString());
+            window.history.replaceState({}, '', url.toString());
+        }
+    }, []);
 
     //認証状態と直近の履歴を確認
     useEffect(() => {
@@ -147,7 +158,23 @@ export default function SalesForm(){
                 color: '#6b7280',
                 marginBottom: '1rem'
             }}>
-                <strong>デバッグ情報:</strong> バージョン {VERSION} | 最終更新: {new Date().toLocaleString('ja-JP')}
+                <strong>デバッグ情報:</strong> バージョン {VERSION} | 最終更新: {new Date().toLocaleString('ja-JP')}<br/>
+                <strong>URL:</strong> {typeof window !== 'undefined' ? window.location.href : 'Loading...'}<br/>
+                <button 
+                    onClick={() => window.location.reload()} 
+                    style={{
+                        marginTop: '0.5rem',
+                        padding: '0.25rem 0.5rem',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.25rem',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem'
+                    }}
+                >
+                    強制リロード
+                </button>
             </div>
             <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} style={{ display: 'grid', gap: '1rem' }}>
                 <label>
