@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
 import SettingsMenu from "../settings-menu/SettingsMenu";
 
@@ -9,7 +9,8 @@ interface LayoutWrapperProps {
 }
 
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
-  const pathname = usePathname();
+  const router = useRouter();
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const SIDEBAR_WIDTH = 240;
 
   // サイドバーを非表示にするページ

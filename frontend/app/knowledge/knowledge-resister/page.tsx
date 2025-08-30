@@ -53,7 +53,8 @@ export default function KnowledgePage() {
   const updateKnowledgeEntry = async (knowledge: Knowledge) => {
     try {
       // Supabaseのupdate機能を使用
-      const { data: updatedKnowledge, error } = await import('../../../lib/supabase').then(m => m.supabase)
+      const { supabase } = await import('../../../lib/supabase');
+      const { data: updatedKnowledge, error } = await supabase
         .from('knowledge')
         .update({
           title: knowledge.title,
