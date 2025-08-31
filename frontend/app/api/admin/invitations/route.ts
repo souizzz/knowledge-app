@@ -1,13 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import crypto from 'crypto'
-
 // このルートの動的レンダリングを強制
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
 export const dynamicParams = true
+
+// 動的インポートで静的レンダリングを回避
+async function getNextResponse() {
+  const { NextResponse } = await import('next/server')
+  return NextResponse
+}
 
 // 静的初期化を避けるため、Supabaseクライアントの作成を関数内に移動
 function getSupabaseClient() {
@@ -22,6 +24,9 @@ function generateInvitationToken(): string {
 
 export async function POST() {
   try {
+    // 動的インポートでNextResponseを取得
+    const NextResponse = await getNextResponse()
+    
     // 動的データアクセスで静的レンダリングを防ぐ
     const timestamp = Date.now()
     const randomId = Math.random().toString(36).substring(7)
@@ -38,6 +43,7 @@ export async function POST() {
     })
   } catch (error) {
     console.error('管理API エラー:', error)
+    const NextResponse = await getNextResponse()
     return NextResponse.json({ 
       error: 'Internal server error',
       timestamp: Date.now()

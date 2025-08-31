@@ -26,6 +26,9 @@ const nextConfig = {
     trailingSlash: false,
     skipTrailingSlashRedirect: true,
     
+    // APIルートの静的生成を完全に無効化
+    outputFileTracing: false,
+    
     // CORS設定を追加
     async headers() {
       return [

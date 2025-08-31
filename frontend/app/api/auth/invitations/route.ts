@@ -1,12 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
 // このルートの動的レンダリングを強制
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
 export const dynamicParams = true
+
+// 動的インポートで静的レンダリングを回避
+async function getNextResponse() {
+  const { NextResponse } = await import('next/server')
+  return NextResponse
+}
 
 // 静的初期化を避けるため、Supabaseクライアントの作成を関数内に移動
 function getSupabaseClient() {
@@ -21,6 +24,9 @@ export async function GET() {
   const randomId = Math.random().toString(36).substring(7)
   
   try {
+    // 動的インポートでNextResponseを取得
+    const NextResponse = await getNextResponse()
+    
     // 環境変数にアクセスして動的レンダリングを強制
     const envCheck = process.env.NODE_ENV || 'unknown'
     
@@ -35,6 +41,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error('API エラー:', error)
+    const NextResponse = await getNextResponse()
     return NextResponse.json({ 
       error: 'Internal server error',
       timestamp: Date.now()
@@ -44,6 +51,7 @@ export async function GET() {
 
 // 動的レンダリングを確実にするためPOSTメソッドを追加
 export async function POST() {
+  const NextResponse = await getNextResponse()
   return NextResponse.json({ 
     error: 'Method not allowed',
     timestamp: Date.now()
