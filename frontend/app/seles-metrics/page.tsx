@@ -30,11 +30,11 @@ export default function SalesForm(){
     const [history, setHistory] = useState<Report[]>([])
     const canSubmit = me && calls > 0 && connects > 0 && docsSent > 0 && apointments > 0 && !!date
     
-    // Version info for cache busting
+    // キャッシュバスティング用のバージョン情報
     const VERSION = "v2.4.0"
     const CACHE_BUST = Date.now()
 
-    // Force cache busting by updating URL
+    // URLを更新してキャッシュバスティングを強制
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const url = new URL(window.location.href);
@@ -76,22 +76,22 @@ export default function SalesForm(){
             .order('report_date', { ascending: false })
             .then(({ data, error }) => {
                 if(error) {
-                    console.warn('Sales forms table not found or error:', error.message);
-                    console.log('Debug: Using new sales_forms table implementation');
+                    console.warn('Sales formsテーブルが見つからないかエラー:', error.message);
+                    console.log('デバッグ: 新しいsales_formsテーブル実装を使用中');
                     setHistory([]);
                     return;
                 }
-                console.log('Debug: Successfully fetched sales data:', data?.length || 0, 'records');
+                console.log('デバッグ: 営業データの取得に成功:', data?.length || 0, '件のレコード');
                 setHistory((data as Report[]) ?? [])
                 const today = (data as Report[])?.find(r => r.report_date === date)
                 if(today) {
-                    console.log('Debug: Found today data:', today);
+                    console.log('デバッグ: 今日のデータを発見:', today);
                     setCalls(today.calls)
                     setConnects(today.connects)
                     setDocsSent(today.docs_sent)
                     setApointments(today.apointments)
                 } else {
-                    console.log('Debug: No data found for today:', date);
+                    console.log('デバッグ: 今日のデータが見つかりません:', date);
                 }
             })
     }, [me, date])
@@ -118,7 +118,7 @@ export default function SalesForm(){
 
         setLoading(false)
         if(error) {
-            console.error('Failed to save sales data:', error.message);
+            console.error('営業データの保存に失敗:', error.message);
             setError('データの保存に失敗しました。テーブルが存在しない可能性があります。');
             return;
         }
@@ -131,7 +131,7 @@ export default function SalesForm(){
             .order('report_date', { ascending: false })
         
         if (refetchError) {
-            console.warn('Failed to refetch sales data:', refetchError.message);
+            console.warn('営業データの再取得に失敗:', refetchError.message);
         } else {
             setHistory((refeched as Report[]) ?? [])
         }

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Force dynamic rendering for this route
+// このルートの動的レンダリングを強制
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const revalidate = 0
 
-// Move Supabase client creation inside the function to avoid static initialization
+// 静的初期化を避けるため、Supabaseクライアントの作成を関数内に移動
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ranfnqwqbunalbptruum.supabase.co'
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbmZucXdxYnVuYWxicHRydXVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjIyODUzOCwiZXhwIjoyMDcxODA0NTM4fQ.fHvcpzrRTu8ugp6APGpa45NWpgSwQNQeAsfKqA0z2O0'
@@ -14,18 +14,18 @@ function getSupabaseClient() {
 }
 
 export async function GET() {
-  // Completely avoid using request object to prevent static rendering
+  // 静的レンダリングを防ぐため、requestオブジェクトの使用を完全に回避
   const timestamp = Date.now()
   
   try {
-    // Return a simple response without any request processing
+    // リクエスト処理なしでシンプルなレスポンスを返す
     return NextResponse.json({
       message: 'API endpoint is working',
       timestamp,
       dynamic: true
     })
   } catch (error) {
-    console.error('Error in API:', error)
+    console.error('API エラー:', error)
     return NextResponse.json({ 
       error: 'Internal server error',
       timestamp: Date.now()
@@ -33,7 +33,7 @@ export async function GET() {
   }
 }
 
-// Add POST method to ensure dynamic rendering
+// 動的レンダリングを確実にするためPOSTメソッドを追加
 export async function POST() {
   return NextResponse.json({ 
     error: 'Method not allowed',

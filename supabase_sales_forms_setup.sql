@@ -1,10 +1,10 @@
 -- =============================================
--- Sales Forms Table Setup for Sales Metrics
+-- 営業数値管理用Sales Formsテーブルセットアップ
 -- =============================================
--- Run this SQL in your Supabase SQL Editor
--- This will create the sales_forms table with proper security
+-- Supabase SQL EditorでこのSQLを実行してください
+-- 適切なセキュリティ設定でsales_formsテーブルを作成します
 
--- Create sales_forms table
+-- sales_formsテーブルを作成
 CREATE TABLE IF NOT EXISTS sales_forms (
   id SERIAL PRIMARY KEY,
   report_date DATE NOT NULL,
