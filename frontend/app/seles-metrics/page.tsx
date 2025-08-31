@@ -31,7 +31,7 @@ export default function SalesForm(){
     const canSubmit = me && calls > 0 && connects > 0 && docsSent > 0 && apointments > 0 && !!date
     
     // Version info for cache busting
-    const VERSION = "v2.3.0"
+    const VERSION = "v2.4.0"
     const CACHE_BUST = Date.now()
 
     // Force cache busting by updating URL

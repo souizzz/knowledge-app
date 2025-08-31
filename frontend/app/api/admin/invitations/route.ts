@@ -7,50 +7,30 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const revalidate = 0
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ranfnqwqbunalbptruum.supabase.co'
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbmZucXdxYnVuYWxicHRydXVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjIyODUzOCwiZXhwIjoyMDcxODA0NTM4fQ.fHvcpzrRTu8ugp6APGpa45NWpgSwQNQeAsfKqA0z2O0'
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+// Move Supabase client creation inside the function to avoid static initialization
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ranfnqwqbunalbptruum.supabase.co'
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbmZucXdxYnVuYWxicHRydXVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjIyODUzOCwiZXhwIjoyMDcxODA0NTM4fQ.fHvcpzrRTu8ugp6APGpa45NWpgSwQNQeAsfKqA0z2O0'
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
 
 function generateInvitationToken(): string {
   return crypto.randomBytes(32).toString('hex')
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const body = await request.json()
-    const { email, role = 'MEMBER' } = body
-
-    if (!email) {
-      return NextResponse.json({ error: 'Email required' }, { status: 400 })
-    }
-
-    const token = generateInvitationToken()
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 7) // 7日後
-
-    const { error } = await supabase
-      .from('invitations')
-      .insert({
-        email,
-        role,
-        token,
-        expires_at: expiresAt.toISOString()
-      })
-
-    if (error) {
-      console.error('Error creating invitation:', error)
-      return NextResponse.json({ error: 'Failed to create invitation' }, { status: 500 })
-    }
-
-    const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://sales-develop.com'
-    const inviteUrl = `${frontendUrl}/invite/${token}`
-
+    // Return a simple response without any request processing
     return NextResponse.json({
-      invite_url: inviteUrl
+      message: 'Admin API endpoint is working',
+      timestamp: Date.now(),
+      dynamic: true
     })
   } catch (error) {
-    console.error('Error creating invitation:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Error in admin API:', error)
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      timestamp: Date.now()
+    }, { status: 500 })
   }
 }

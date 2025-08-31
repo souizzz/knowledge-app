@@ -6,48 +6,26 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const revalidate = 0
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ranfnqwqbunalbptruum.supabase.co'
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbmZucXdxYnVuYWxicHRydXVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjIyODUzOCwiZXhwIjoyMDcxODA0NTM4fQ.fHvcpzrRTu8ugp6APGpa45NWpgSwQNQeAsfKqA0z2O0'
+// Move Supabase client creation inside the function to avoid static initialization
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ranfnqwqbunalbptruum.supabase.co'
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbmZucXdxYnVuYWxicHRydXVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjIyODUzOCwiZXhwIjoyMDcxODA0NTM4fQ.fHvcpzrRTu8ugp6APGpa45NWpgSwQNQeAsfKqA0z2O0'
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-export async function GET(request: NextRequest) {
-  // Prevent static rendering by using dynamic data
+export async function GET() {
+  // Completely avoid using request object to prevent static rendering
   const timestamp = Date.now()
   
   try {
-    // Use request.nextUrl instead of new URL(request.url) to avoid static rendering
-    const token = request.nextUrl.searchParams.get('token')
-
-    if (!token) {
-      return NextResponse.json({ 
-        error: 'Token required',
-        timestamp 
-      }, { status: 400 })
-    }
-
-    const { data: invitation, error } = await supabase
-      .from('invitations')
-      .select('*')
-      .eq('token', token)
-      .eq('accepted_at', null)
-      .gt('expires_at', new Date().toISOString())
-      .single()
-
-    if (error || !invitation) {
-      return NextResponse.json({ 
-        error: 'Invitation not found',
-        timestamp 
-      }, { status: 404 })
-    }
-
+    // Return a simple response without any request processing
     return NextResponse.json({
-      email: invitation.email,
-      role: invitation.role,
-      timestamp
+      message: 'API endpoint is working',
+      timestamp,
+      dynamic: true
     })
   } catch (error) {
-    console.error('Error fetching invitation:', error)
+    console.error('Error in API:', error)
     return NextResponse.json({ 
       error: 'Internal server error',
       timestamp: Date.now()
@@ -56,7 +34,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Add POST method to ensure dynamic rendering
-export async function POST(request: NextRequest) {
+export async function POST() {
   return NextResponse.json({ 
     error: 'Method not allowed',
     timestamp: Date.now()
