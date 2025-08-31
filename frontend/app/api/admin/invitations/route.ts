@@ -19,7 +19,7 @@ async function getSupabaseClient() {
 }
 
 function generateInvitationToken(): string {
-  return crypto.randomBytes(32).toString('hex')
+  return (crypto as any).randomBytes(32).toString('hex')
 }
 
 export async function POST() {
