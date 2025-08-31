@@ -11,7 +11,7 @@ interface LayoutWrapperProps {
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const router = useRouter();
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  const SIDEBAR_WIDTH = 250;
+  const SIDEBAR_WIDTH = 60; // 折りたたみ時の幅
   const TOPBAR_HEIGHT = 60;
 
   // サイドバーとトップバーを非表示にするページ

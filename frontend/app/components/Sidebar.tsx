@@ -43,20 +43,26 @@ export default function Sidebar() {
   const router = useRouter();
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <nav style={{ 
-      position: 'fixed',
-      left: 0,
-      top: '60px', // Topbarの高さ分下げる
-      bottom: 0,
-      width: '250px',
-      backgroundColor: '#ffffff',
-      borderRight: '1px solid #e5e7eb',
-      padding: '1rem',
-      overflowY: 'auto',
-      zIndex: 999
-    }}>
+    <nav 
+      style={{ 
+        position: 'fixed',
+        left: 0,
+        top: '60px', // Topbarの高さ分下げる
+        bottom: 0,
+        width: isHovered ? '200px' : '60px', // ホバー時に展開
+        backgroundColor: '#ffffff',
+        borderRight: '1px solid #e5e7eb',
+        padding: isHovered ? '1rem' : '0.75rem',
+        overflowY: 'auto',
+        zIndex: 999,
+        transition: 'all 0.3s ease'
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div style={{ display: "grid", gap: 8 }}>
         {NAV.map((item) => {
         const active = pathname?.startsWith(item.href);
@@ -70,22 +76,23 @@ export default function Sidebar() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "12px",
-              padding: "12px 16px",
+              gap: isHovered ? "9px" : "0px", // ホバー時にギャップを調整
+              padding: isHovered ? "9px 12px" : "9px 6px", // 25%小さく
               border: "1px solid #e5e7eb",
-              borderRadius: 10,
+              borderRadius: 8, // 25%小さく
               textDecoration: "none",
               color: active ? "#3b82f6" : "#374151",
               background: active ? "#f5f7fb" : (isHovered ? "#f9fafb" : "#fff"),
-              boxShadow: active ? "0 8px 24px rgba(0,0,0,.06)" : (isHovered ? "0 4px 12px rgba(0,0,0,.04)" : "none"),
+              boxShadow: active ? "0 6px 18px rgba(0,0,0,.06)" : (isHovered ? "0 3px 9px rgba(0,0,0,.04)" : "none"), // 25%小さく
               transition: "all 0.2s ease",
               outline: "none",
               userSelect: "none",
               WebkitTapHighlightColor: "transparent",
               fontWeight: active ? "600" : "500",
-              fontSize: "14px",
+              fontSize: "10.5px", // 25%小さく (14px * 0.75)
               lineHeight: "1.4",
               transform: isHovered ? "translateY(-1px)" : "translateY(0)",
+              justifyContent: isHovered ? "flex-start" : "center", // ホバー時に左寄せ
             }}
             aria-current={active ? "page" : undefined}
             onMouseEnter={() => setHoveredItem(item.href)}
@@ -108,11 +115,16 @@ export default function Sidebar() {
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center",
-              color: active ? "#3b82f6" : "#6b7280"
+              color: active ? "#3b82f6" : "#6b7280",
+              minWidth: "20px" // アイコンの最小幅を確保
             }}>
               {item.icon}
             </span>
-            <span>{item.label}</span>
+            {isHovered && <span style={{ 
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            }}>{item.label}</span>}
           </Link>
         );
       })}
