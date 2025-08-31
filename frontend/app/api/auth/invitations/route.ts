@@ -16,9 +16,8 @@ export async function GET(request: NextRequest) {
   const timestamp = Date.now()
   
   try {
-    // Use headers instead of URL to avoid static rendering issues
-    const url = new URL(request.url)
-    const token = url.searchParams.get('token')
+    // Use request.nextUrl instead of new URL(request.url) to avoid static rendering
+    const token = request.nextUrl.searchParams.get('token')
 
     if (!token) {
       return NextResponse.json({ 
@@ -54,4 +53,12 @@ export async function GET(request: NextRequest) {
       timestamp: Date.now()
     }, { status: 500 })
   }
+}
+
+// Add POST method to ensure dynamic rendering
+export async function POST(request: NextRequest) {
+  return NextResponse.json({ 
+    error: 'Method not allowed',
+    timestamp: Date.now()
+  }, { status: 405 })
 }

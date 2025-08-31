@@ -22,6 +22,9 @@ const nextConfig = {
     trailingSlash: false,
     skipTrailingSlashRedirect: true,
     
+    // APIルートの静的生成を完全に無効化
+    output: 'standalone',
+    
     // CORS設定を追加
     async headers() {
       return [
