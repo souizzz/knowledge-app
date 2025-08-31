@@ -35,24 +35,29 @@ export default function Topbar() {
         <button
           onClick={() => setIsSettingsOpen(!isSettingsOpen)}
           style={{
-            padding: '0.5rem',
+            padding: '0.75rem',
             backgroundColor: 'transparent',
-            border: 'none',
-            borderRadius: '0.375rem',
+            border: '1px solid #e5e7eb',
+            borderRadius: '0.5rem',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: '#6b7280',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#f3f4f6'
+            e.currentTarget.style.backgroundColor = '#f8fafc'
             e.currentTarget.style.color = '#374151'
+            e.currentTarget.style.borderColor = '#d1d5db'
+            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'transparent'
             e.currentTarget.style.color = '#6b7280'
+            e.currentTarget.style.borderColor = '#e5e7eb'
+            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
           }}
         >
           <svg
@@ -66,7 +71,7 @@ export default function Topbar() {
             strokeLinejoin="round"
           >
             <circle cx="12" cy="12" r="3" />
-            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </button>
 

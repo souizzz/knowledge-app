@@ -5,9 +5,38 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const NAV = [
-  { href: "/knowledge/knowledge-resister", label: "ナレッジ管理＆登録" },
-  { href: "/seles-metrics?v=v2.2.0&cb=" + Date.now(), label: "営業数値管理" },
-  { href: "/admin/users", label: "ユーザー管理" },
+  { 
+    href: "/knowledge/knowledge-resister", 
+    label: "ナレッジ管理＆登録",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    )
+  },
+  { 
+    href: "/seles-metrics?v=v2.2.0&cb=" + Date.now(), 
+    label: "営業数値管理",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 3v18h18" />
+        <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
+      </svg>
+    )
+  },
+  { 
+    href: "/admin/users", 
+    label: "ユーザー管理",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    )
+  },
 ];
 
 export default function Sidebar() {
@@ -39,7 +68,9 @@ export default function Sidebar() {
             href={item.href}
             prefetch
             style={{
-              display: "block",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
               padding: "12px 16px",
               border: "1px solid #e5e7eb",
               borderRadius: 10,
@@ -73,7 +104,15 @@ export default function Sidebar() {
               }
             }}
           >
-            {item.label}
+            <span style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              color: active ? "#3b82f6" : "#6b7280"
+            }}>
+              {item.icon}
+            </span>
+            <span>{item.label}</span>
           </Link>
         );
       })}
