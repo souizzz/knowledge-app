@@ -1,9 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Topbar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const router = useRouter()
+
+  const handleLogout = () => {
+    // 設定メニューを閉じる
+    setIsSettingsOpen(false)
+    // ログインページに遷移
+    router.push('/login')
+  }
 
   return (
     <div style={{
@@ -134,6 +143,7 @@ export default function Topbar() {
               </button>
               <hr style={{ margin: '0.5rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
               <button
+                onClick={handleLogout}
                 style={{
                   width: '100%',
                   padding: '0.75rem 1rem',
