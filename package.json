@@ -1,35 +1,19 @@
 {
-  "name": "slack-bot",
+  "name": "knowledge-app",
   "version": "1.0.0",
-  "license": "MIT",
-  "description": "Slack Bot with Knowledge Management System",
+  "private": true,
   "scripts": {
+    "build": "cd frontend && npm install && npm run build",
     "dev": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build",
-    "start": "cd frontend && npm run start",
-    "supabase:start": "supabase start",
-    "supabase:stop": "supabase stop",
-    "supabase:status": "supabase status"
-  },
-  "keywords": [
-    "slack",
-    "bot",
-    "knowledge",
-    "management",
-    "nextjs",
-    "supabase"
-  ],
-  "author": "Your Name",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/souizzz/knowledge-app.git"
+    "start": "cd frontend && npm run start"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.56.1",
-    "dotenv": "^17.2.1"
+    "next": "14.2.32",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   }
 }

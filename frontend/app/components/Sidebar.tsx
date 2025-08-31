@@ -16,8 +16,20 @@ export default function Sidebar() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
-    <nav style={{ display: "grid", gap: 8 }}>
-      {NAV.map((item) => {
+    <nav style={{ 
+      position: 'fixed',
+      left: 0,
+      top: '60px', // Topbarの高さ分下げる
+      bottom: 0,
+      width: '250px',
+      backgroundColor: '#ffffff',
+      borderRight: '1px solid #e5e7eb',
+      padding: '1rem',
+      overflowY: 'auto',
+      zIndex: 999
+    }}>
+      <div style={{ display: "grid", gap: 8 }}>
+        {NAV.map((item) => {
         const active = pathname?.startsWith(item.href);
         const isHovered = hoveredItem === item.href;
         
@@ -65,6 +77,7 @@ export default function Sidebar() {
           </Link>
         );
       })}
+      </div>
     </nav>
   );
 }

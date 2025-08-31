@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
-import SettingsMenu from "../settings-menu/SettingsMenu";
+import Topbar from "./Topbar";
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -11,51 +11,29 @@ interface LayoutWrapperProps {
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const router = useRouter();
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  const SIDEBAR_WIDTH = 240;
+  const SIDEBAR_WIDTH = 250;
+  const TOPBAR_HEIGHT = 60;
 
-  // サイドバーを非表示にするページ
-  const hideSidebarPages = ['/login', '/register', '/verify-email', '/verify-success', '/invite'];
-  const shouldHideSidebar = hideSidebarPages.some(page => pathname?.startsWith(page));
+  // サイドバーとトップバーを非表示にするページ
+  const hideLayoutPages = ['/login', '/register', '/verify-email', '/verify-success', '/invite'];
+  const shouldHideLayout = hideLayoutPages.some(page => pathname?.startsWith(page));
 
   return (
     <>
-      {/* 右上の設定（認証ページでは非表示） */}
-      {!shouldHideSidebar && (
-        <header style={{
-          position: "fixed",
-          right: 16,
-          top: 16,
-          zIndex: 50
-        }}>
-          <SettingsMenu />
-        </header>
-      )}
+      {/* トップバー（認証ページでは非表示） */}
+      {!shouldHideLayout && <Topbar />}
 
       {/* 左サイドバー（認証ページでは非表示） */}
-      {!shouldHideSidebar && (
-        <aside
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            height: "100vh",
-            width: SIDEBAR_WIDTH,
-            borderRight: "1px solid #e5e7eb",
-            background: "#fff",
-            padding: 12,
-            zIndex: 40,
-          }}
-        >
-          <Sidebar />
-        </aside>
-      )}
+      {!shouldHideLayout && <Sidebar />}
 
-      {/* 右メイン（認証ページではフル幅） */}
+      {/* メインコンテンツエリア */}
       <main
         style={{
           minHeight: "100vh",
-          marginLeft: shouldHideSidebar ? 0 : SIDEBAR_WIDTH,
-          padding: shouldHideSidebar ? "0" : "24px 16px",
+          marginLeft: shouldHideLayout ? 0 : SIDEBAR_WIDTH,
+          marginTop: shouldHideLayout ? 0 : TOPBAR_HEIGHT,
+          padding: shouldHideLayout ? "0" : "24px 16px",
+          backgroundColor: "#f9fafb"
         }}
       >
         {children}
