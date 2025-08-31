@@ -10,7 +10,11 @@ const nextConfig = {
     
     // APIルートの動的レンダリングを強制
     experimental: {
-        serverComponentsExternalPackages: ['@supabase/supabase-js']
+        serverComponentsExternalPackages: ['@supabase/supabase-js'],
+        // APIルートの静的生成を完全に無効化
+        serverActions: {
+            allowedOrigins: ['*']
+        }
     },
     
     // すべてのAPIルートを動的レンダリングに強制

@@ -6,6 +6,8 @@ import crypto from 'crypto'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const revalidate = 0
+export const fetchCache = 'force-no-store'
+export const dynamicParams = true
 
 // 静的初期化を避けるため、Supabaseクライアントの作成を関数内に移動
 function getSupabaseClient() {
@@ -20,11 +22,19 @@ function generateInvitationToken(): string {
 
 export async function POST() {
   try {
+    // 動的データアクセスで静的レンダリングを防ぐ
+    const timestamp = Date.now()
+    const randomId = Math.random().toString(36).substring(7)
+    const envCheck = process.env.NODE_ENV || 'unknown'
+    
     // リクエスト処理なしでシンプルなレスポンスを返す
     return NextResponse.json({
       message: 'Admin API endpoint is working',
-      timestamp: Date.now(),
-      dynamic: true
+      timestamp,
+      randomId,
+      env: envCheck,
+      dynamic: true,
+      buildTime: new Date().toISOString()
     })
   } catch (error) {
     console.error('管理API エラー:', error)

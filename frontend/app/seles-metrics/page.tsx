@@ -31,7 +31,7 @@ export default function SalesForm(){
     const canSubmit = me && calls > 0 && connects > 0 && docsSent > 0 && apointments > 0 && !!date
     
     // キャッシュバスティング用のバージョン情報
-    const VERSION = "v2.4.0"
+    const VERSION = "v2.5.0"
     const CACHE_BUST = Date.now()
 
     // URLを更新してキャッシュバスティングを強制
