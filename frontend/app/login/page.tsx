@@ -4,7 +4,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [mounted, setMounted] = useState(false);
@@ -59,12 +59,18 @@ export default function LoginPage() {
     }
   }, [mounted]);
 
-  const sendMagicLink = async () => {
+  const handleLogin = async () => {
     if (!supabase) return;
     
     // メールアドレスの検証
     if (!email.trim()) {
       setMessage("メールアドレスを入力してください");
+      return;
+    }
+
+    // パスワードの検証
+    if (!password.trim()) {
+      setMessage("パスワードを入力してください");
       return;
     }
 
@@ -79,39 +85,36 @@ export default function LoginPage() {
     setMessage("");
     
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/callback`,
-        },
+        password,
       });
       
       if (error) {
-        console.error('Magic link error:', error);
+        console.error('Login error:', error);
         
-        // メール送信失敗をログに記録
-        console.log(`[EMAIL_SEND] Failed to send magic link to ${email}: ${error.message}`);
+        // ログイン失敗をログに記録
+        console.log(`[LOGIN] Failed to login with ${email}: ${error.message}`);
         
         // エラーメッセージの詳細化
-        let errorMessage = "エラーが発生しました";
-        if (error.message.includes('rate limit')) {
-          errorMessage = "送信回数が上限に達しました。しばらく待ってから再試行してください";
-        } else if (error.message.includes('invalid email')) {
-          errorMessage = "無効なメールアドレスです";
-        } else if (error.message.includes('network')) {
-          errorMessage = "ネットワークエラーが発生しました。接続を確認してください";
+        let errorMessage = "ログインに失敗しました";
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "メールアドレスまたはパスワードが正しくありません";
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "メールアドレスが確認されていません。確認メールをチェックしてください";
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = "ログイン試行回数が上限に達しました。しばらく待ってから再試行してください";
         } else {
           errorMessage = `エラー: ${error.message}`;
         }
         
         setMessage(errorMessage);
       } else {
-        // メール送信成功をログに記録
-        console.log(`[EMAIL_SEND] Magic link sent successfully to ${email}`);
+        // ログイン成功をログに記録
+        console.log(`[LOGIN] Login successful for ${email}`);
         
-        setSent(true);
-        setMessage("メールを送信しました。メールボックスを確認してリンクをクリックしてください。");
+        // メインページへリダイレクト
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('Network error:', error);
@@ -150,7 +153,7 @@ export default function LoginPage() {
           fontSize: "16px",
           margin: "0"
         }}>
-          メールアドレスを入力してログインしてください
+          メールアドレスとパスワードを入力してログインしてください
         </p>
       </div>
 
@@ -189,31 +192,66 @@ export default function LoginPage() {
         />
       </div>
 
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{
+          display: "block",
+          fontSize: "14px",
+          fontWeight: "600",
+          color: "#374151",
+          marginBottom: "8px"
+        }}>
+          パスワード
+        </label>
+        <input
+          type="password"
+          placeholder="パスワードを入力してください"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={isLoading}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            border: "2px solid #e5e7eb",
+            borderRadius: "8px",
+            fontSize: "16px",
+            transition: "border-color 0.2s ease",
+            boxSizing: "border-box",
+            backgroundColor: isLoading ? "#f9fafb" : "white"
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = "#3b82f6";
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = "#e5e7eb";
+          }}
+        />
+      </div>
+
       <button 
-        onClick={sendMagicLink} 
-        disabled={isLoading || !email.trim() || !supabase}
+        onClick={handleLogin} 
+        disabled={isLoading || !email.trim() || !password.trim() || !supabase}
         style={{
           width: "100%",
           padding: "14px 24px",
-          backgroundColor: isLoading || !email.trim() || !supabase ? "#9ca3af" : "#3b82f6",
+          backgroundColor: isLoading || !email.trim() || !password.trim() || !supabase ? "#9ca3af" : "#3b82f6",
           color: "white",
           border: "none",
           borderRadius: "8px",
           fontSize: "16px",
           fontWeight: "600",
-          cursor: isLoading || !email.trim() || !supabase ? "not-allowed" : "pointer",
+          cursor: isLoading || !email.trim() || !password.trim() || !supabase ? "not-allowed" : "pointer",
           transition: "all 0.2s ease",
           marginBottom: "20px"
         }}
         onMouseOver={(e) => {
-          if (!isLoading && email.trim() && supabase) {
+          if (!isLoading && email.trim() && password.trim() && supabase) {
             const target = e.target as HTMLButtonElement;
             target.style.backgroundColor = "#2563eb";
             target.style.transform = "translateY(-1px)";
           }
         }}
         onMouseOut={(e) => {
-          if (!isLoading && email.trim() && supabase) {
+          if (!isLoading && email.trim() && password.trim() && supabase) {
             const target = e.target as HTMLButtonElement;
             target.style.backgroundColor = "#3b82f6";
             target.style.transform = "translateY(0)";
@@ -230,45 +268,14 @@ export default function LoginPage() {
               borderRadius: "50%",
               animation: "spin 1s linear infinite"
             }}></span>
-            送信中...
+            ログイン中...
           </span>
         ) : (
-          "📧 メールリンクを送る"
+          "ログインをする"
         )}
       </button>
 
-      {sent && (
-        <div style={{
-          padding: "16px",
-          backgroundColor: "#d1fae5",
-          border: "1px solid #a7f3d0",
-          borderRadius: "8px",
-          marginBottom: "20px"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "20px" }}>✅</span>
-            <div>
-              <p style={{
-                margin: "0",
-                color: "#065f46",
-                fontWeight: "600",
-                fontSize: "14px"
-              }}>
-                メールを送信しました
-              </p>
-              <p style={{
-                margin: "4px 0 0 0",
-                color: "#047857",
-                fontSize: "13px"
-              }}>
-                メールボックスを確認してリンクをクリックしてください
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {message && !sent && (
+      {message && (
         <div style={{
           padding: "16px",
           backgroundColor: message.includes("送信") ? "#d1fae5" : "#fee2e2",
