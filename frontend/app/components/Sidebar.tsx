@@ -94,10 +94,11 @@ export default function Sidebar() {
             }}
             aria-current={active ? "page" : undefined}
             onTouchStart={(e: React.TouchEvent) => {
-              (e.currentTarget as HTMLElement).style.transform = "scale(0.98)";
+              // タッチ時のスケール変更を削除してUIずれを防止
+              (e.currentTarget as HTMLElement).style.opacity = "0.8";
             }}
             onTouchEnd={(e: React.TouchEvent) => {
-              (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+              (e.currentTarget as HTMLElement).style.opacity = "1";
             }}
             onClick={(e: React.MouseEvent) => {
               // アクティブな項目をクリックした場合の処理
@@ -112,14 +113,17 @@ export default function Sidebar() {
               alignItems: "center", 
               justifyContent: "center",
               color: active ? "#3b82f6" : "#6b7280",
-              minWidth: "20px" // アイコンの最小幅を確保
+              minWidth: "20px", // アイコンの最小幅を確保
+              flexShrink: 0 // アイコンのサイズを固定
             }}>
               {item.icon}
             </span>
             {isHovered && <span style={{ 
               whiteSpace: "nowrap",
               overflow: "hidden",
-              textOverflow: "ellipsis"
+              textOverflow: "ellipsis",
+              color: active ? "#3b82f6" : "#374151", // テキストの色を統一
+              flex: 1 // 残りのスペースを使用
             }}>{item.label}</span>}
           </Link>
         );
