@@ -19,6 +19,18 @@ export default function LoginPage() {
   // URLパラメータからエラーメッセージを取得
   useEffect(() => {
     if (!mounted) return;
+
+    // 既ログインならメインへ遷移
+    (async () => {
+      try {
+        const s = supabaseBrowser();
+        const { data: { session } } = await s.auth.getSession();
+        if (session) {
+          window.location.replace('/');
+          return;
+        }
+      } catch {}
+    })();
     
     // URLSearchParamsを使用してURLパラメータを取得
     const urlParams = new URLSearchParams(window.location.search);

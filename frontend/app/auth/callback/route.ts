@@ -79,5 +79,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL("/app", req.url));
+  // 認証完了後はメインページへ遷移
+  return NextResponse.redirect(new URL("/", req.url));
 }
