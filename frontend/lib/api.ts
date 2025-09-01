@@ -71,15 +71,18 @@ export async function fetchMe(): Promise<MeClaims | null> {
     const { data: { user }, error } = await supabase.auth.getUser();
     
     if (error || !user) {
+      console.log('[fetchMe] No user found:', error);
       return null;
     }
+
+    console.log('[fetchMe] User ID:', user.id);
 
     // ユーザー情報と組織情報を取得
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select(`
         *,
-        organizations!inner (
+        organizations (
           id,
           name
         )
@@ -87,21 +90,30 @@ export async function fetchMe(): Promise<MeClaims | null> {
       .eq('id', user.id)
       .single();
 
+    console.log('[fetchMe] User data:', userData);
+    console.log('[fetchMe] User error:', userError);
+
     if (userError || !userData) {
+      console.log('[fetchMe] Failed to get user data');
       return null;
     }
+
+    // 組織情報の確認
+    const orgName = userData.organizations?.name || 'Default Organization';
+    console.log('[fetchMe] Organization name:', orgName);
 
     return {
       sub: user.id,
       org_id: userData.org_id,
-      org_name: userData.organizations.name,
+      org_name: orgName,
       role: userData.role,
       username: userData.username,
       email: userData.email,
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 3600
     };
-  } catch {
+  } catch (error) {
+    console.error('[fetchMe] Error:', error);
     return null;
   }
 }

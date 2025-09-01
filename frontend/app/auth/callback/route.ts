@@ -73,10 +73,23 @@ export async function GET(req: NextRequest) {
       .single();
 
     if (!orgErr && org?.id) {
+      // org_membersテーブルに追加
       await supabase
         .from("org_members")
         .insert({ org_id: org.id, user_id: user.id, role: "owner" });
+      
+      // usersテーブルのorg_idも更新
+      await supabase
+        .from("users")
+        .update({ org_id: org.id })
+        .eq("id", user.id);
+        
+      console.log(`[AUTH_CALLBACK] Created organization: ${orgName} (ID: ${org.id}) for user: ${user.id}`);
+    } else {
+      console.error('[AUTH_CALLBACK] Failed to create organization:', orgErr);
     }
+  } else {
+    console.log(`[AUTH_CALLBACK] User ${user.id} already has organization: ${existing[0].org_id}`);
   }
 
   // 認証完了後はメインページへ遷移

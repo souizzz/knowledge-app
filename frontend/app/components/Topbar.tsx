@@ -22,16 +22,27 @@ export default function Topbar() {
 
   useEffect(() => {
     if (!isSettingsOpen) return
+    
+    console.log('[Topbar] Fetching user info...');
     fetchMe().then((me) => {
+      console.log('[Topbar] fetchMe result:', me);
+      
       if (!me) {
+        console.log('[Topbar] No user info, setting to null');
         setUserInfo(null)
         return
       }
-      setUserInfo({
-        org_name: (me as any).org_name ?? null,
+      
+      const userInfoData = {
+        org_name: me.org_name ?? null,
         username: me.username ?? null,
         email: me.email ?? null,
-      })
+      };
+      
+      console.log('[Topbar] Setting user info:', userInfoData);
+      setUserInfo(userInfoData)
+    }).catch((error) => {
+      console.error('[Topbar] Error fetching user info:', error);
     })
   }, [isSettingsOpen])
 
@@ -133,6 +144,10 @@ export default function Topbar() {
                 <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: 4 }}>メールアドレス</div>
                 <div style={{ fontSize: '14px', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {userInfo?.email ?? '（メール情報なし）'}
+                </div>
+                {/* デバッグ情報 */}
+                <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '8px', padding: '4px', backgroundColor: '#f3f4f6', borderRadius: '4px' }}>
+                  Debug: {JSON.stringify(userInfo)}
                 </div>
               </div>
               <hr style={{ margin: '0.5rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
