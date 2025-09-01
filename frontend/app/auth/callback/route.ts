@@ -57,39 +57,55 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 3) ownerの初回サインアップ時：org未所属なら作成してownerで紐付け
-  const { data: existing } = await supabase
-    .from("org_members")
-    .select("org_id").eq("user_id", user.id).limit(1);
+  // 3) 新規ユーザーの場合、ユーザー情報と組織を作成
+  const { data: existingUser } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", user.id)
+    .single();
 
-  if (!existing || existing.length === 0) {
-    // org名はメールのローカル部を使用
+  if (!existingUser) {
+    console.log(`[AUTH_CALLBACK] Creating new user profile for: ${user.id}`);
+    
+    // 組織名はメールのローカル部を使用
     const orgName = (user.email || "My Org").split("@")[0];
+    const username = user.email?.split("@")[0] || "user";
 
+    // 組織を作成
     const { data: org, error: orgErr } = await supabase
       .from("organizations")
-      .insert({ name: orgName, owner_id: user.id })
+      .insert({ 
+        name: orgName,
+        representative_name: username,
+        owner_id: user.id 
+      })
       .select("id")
       .single();
 
     if (!orgErr && org?.id) {
-      // org_membersテーブルに追加
-      await supabase
-        .from("org_members")
-        .insert({ org_id: org.id, user_id: user.id, role: "owner" });
-      
-      // usersテーブルのorg_idも更新
-      await supabase
+      // ユーザープロフィールを作成
+      const { error: userErr } = await supabase
         .from("users")
-        .update({ org_id: org.id })
-        .eq("id", user.id);
-        
-      console.log(`[AUTH_CALLBACK] Created organization: ${orgName} (ID: ${org.id}) for user: ${user.id}`);
+        .insert({
+          id: user.id,
+          org_id: org.id,
+          username: username,
+          email: user.email || "",
+          password_hash: "", // Supabase Auth使用のため空文字
+          email_verified: true,
+          role: "owner"
+        });
+
+      if (userErr) {
+        console.error('[AUTH_CALLBACK] Failed to create user profile:', userErr);
+      } else {
+        console.log(`[AUTH_CALLBACK] Created user profile and organization: ${orgName} (ID: ${org.id}) for user: ${user.id}`);
+      }
     } else {
       console.error('[AUTH_CALLBACK] Failed to create organization:', orgErr);
     }
   } else {
-    console.log(`[AUTH_CALLBACK] User ${user.id} already has organization: ${existing[0].org_id}`);
+    console.log(`[AUTH_CALLBACK] User ${user.id} already exists`);
   }
 
   // 認証完了後はメインページへ遷移

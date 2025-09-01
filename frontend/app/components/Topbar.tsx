@@ -145,10 +145,7 @@ export default function Topbar() {
                 <div style={{ fontSize: '14px', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {userInfo?.email ?? '（メール情報なし）'}
                 </div>
-                {/* デバッグ情報 */}
-                <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '8px', padding: '4px', backgroundColor: '#f3f4f6', borderRadius: '4px' }}>
-                  Debug: {JSON.stringify(userInfo)}
-                </div>
+
               </div>
               <hr style={{ margin: '0.5rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
               <button
