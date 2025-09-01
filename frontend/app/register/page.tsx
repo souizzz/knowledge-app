@@ -85,7 +85,13 @@ export default function RegisterPage() {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: '#f9fafb',
-      padding: '1rem'
+      padding: '1rem',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 1000
     }}>
       <div style={{
         maxWidth: '500px',
