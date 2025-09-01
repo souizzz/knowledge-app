@@ -1,0 +1,51 @@
+name: Deploy to Vercel (Production)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Configure Vercel Project
+        working-directory: frontend
+        run: |
+          echo "{\n  \"version\": 2,\n  \"builds\": [{ \"src\": \"package.json\", \"use\": \"@vercel/next\" }]\n}" > vercel.json
+
+      - name: Pull Vercel Environment Information
+        working-directory: frontend
+        run: |
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_FRONTEND_URL: ${{ secrets.NEXT_PUBLIC_FRONTEND_URL }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy to Vercel (Production)
+        working-directory: frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+
