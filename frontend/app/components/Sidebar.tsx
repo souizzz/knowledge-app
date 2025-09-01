@@ -42,7 +42,6 @@ const NAV = [
 export default function Sidebar() {
   const router = useRouter();
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -66,7 +65,6 @@ export default function Sidebar() {
       <div style={{ display: "grid", gap: 8 }}>
         {NAV.map((item) => {
         const active = pathname?.startsWith(item.href);
-        const isHovered = hoveredItem === item.href;
         
         return (
           <Link
@@ -76,14 +74,14 @@ export default function Sidebar() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: isHovered ? "9px" : "0px", // ホバー時にギャップを調整
+              gap: isHovered ? "9px" : "0px", // サイドバー全体のホバー時にギャップを調整
               padding: isHovered ? "9px 12px" : "9px 6px", // 25%小さく
               border: "1px solid #e5e7eb",
               borderRadius: 8, // 25%小さく
               textDecoration: "none",
               color: active ? "#3b82f6" : "#374151",
-              background: active ? "#f5f7fb" : (isHovered ? "#f9fafb" : "#fff"),
-              boxShadow: active ? "0 6px 18px rgba(0,0,0,.06)" : (isHovered ? "0 3px 9px rgba(0,0,0,.04)" : "none"), // 25%小さく
+              background: active ? "#f5f7fb" : "#fff",
+              boxShadow: active ? "0 6px 18px rgba(0,0,0,.06)" : "none", // 25%小さく
               transition: "all 0.2s ease",
               outline: "none",
               userSelect: "none",
@@ -91,12 +89,10 @@ export default function Sidebar() {
               fontWeight: active ? "600" : "500",
               fontSize: "10.5px", // 25%小さく (14px * 0.75)
               lineHeight: "1.4",
-              transform: isHovered ? "translateY(-1px)" : "translateY(0)",
-              justifyContent: isHovered ? "flex-start" : "center", // ホバー時に左寄せ
+              transform: "translateY(0)",
+              justifyContent: isHovered ? "flex-start" : "center", // サイドバー全体のホバー時に左寄せ
             }}
             aria-current={active ? "page" : undefined}
-            onMouseEnter={() => setHoveredItem(item.href)}
-            onMouseLeave={() => setHoveredItem(null)}
             onTouchStart={(e: React.TouchEvent) => {
               (e.currentTarget as HTMLElement).style.transform = "scale(0.98)";
             }}
