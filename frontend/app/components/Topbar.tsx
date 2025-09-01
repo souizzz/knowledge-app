@@ -1,10 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { fetchMe } from '@/lib/api'
 
 export default function Topbar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [userInfo, setUserInfo] = useState<{
+    org_name: string | null
+    username: string | null
+    email: string | null
+  } | null>(null)
   const router = useRouter()
 
   const handleLogout = () => {
@@ -13,6 +19,21 @@ export default function Topbar() {
     // ログインページに遷移
     router.push('/login')
   }
+
+  useEffect(() => {
+    if (!isSettingsOpen) return
+    fetchMe().then((me) => {
+      if (!me) {
+        setUserInfo(null)
+        return
+      }
+      setUserInfo({
+        org_name: (me as any).org_name ?? null,
+        username: me.username ?? null,
+        email: me.email ?? null,
+      })
+    })
+  }, [isSettingsOpen])
 
   return (
     <div style={{
@@ -95,10 +116,26 @@ export default function Topbar() {
             border: '1px solid #e5e7eb',
             borderRadius: '0.5rem',
             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-            minWidth: '200px',
+            minWidth: '260px',
             zIndex: 1001
           }}>
             <div style={{ padding: '0.5rem 0' }}>
+              {/* ユーザー情報表示 */}
+              <div style={{ padding: '0.5rem 1rem' }}>
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: 4 }}>法人名</div>
+                <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {userInfo?.org_name ?? '（法人名なし）'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: 4 }}>名前</div>
+                <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {userInfo?.username ?? '（名前なし）'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: 4 }}>メールアドレス</div>
+                <div style={{ fontSize: '14px', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {userInfo?.email ?? '（メール情報なし）'}
+                </div>
+              </div>
+              <hr style={{ margin: '0.5rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
               <button
                 style={{
                   width: '100%',

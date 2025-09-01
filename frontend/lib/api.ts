@@ -57,6 +57,7 @@ export async function deleteKnowledge(id: number) {
 export type MeClaims = {
   sub: string;
   org_id: number;
+  org_name: string;
   role: string;
   username: string;
   email?: string;
@@ -73,10 +74,16 @@ export async function fetchMe(): Promise<MeClaims | null> {
       return null;
     }
 
-    // ユーザー情報を取得
+    // ユーザー情報と組織情報を取得
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('*')
+      .select(`
+        *,
+        organizations!inner (
+          id,
+          name
+        )
+      `)
       .eq('id', user.id)
       .single();
 
@@ -87,6 +94,7 @@ export async function fetchMe(): Promise<MeClaims | null> {
     return {
       sub: user.id,
       org_id: userData.org_id,
+      org_name: userData.organizations.name,
       role: userData.role,
       username: userData.username,
       email: userData.email,

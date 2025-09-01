@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ログインリンク</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f8fafc;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+            color: white; 
+            padding: 30px 20px; 
+            text-align: center; 
+            border-radius: 8px 8px 0 0;
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 24px; 
+            font-weight: 600;
+        }
+        .content { 
+            padding: 30px 20px; 
+            background: #f9fafb; 
+        }
+        .content h2 { 
+            color: #1f2937; 
+            margin-top: 0; 
+            font-size: 20px;
+        }
+        .button { 
+            display: inline-block; 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+            color: white; 
+            padding: 14px 28px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+        .button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .info-box { 
+            background: #eff6ff; 
+            border: 1px solid #bfdbfe; 
+            border-radius: 6px; 
+            padding: 16px; 
+            margin: 20px 0; 
+        }
+        .info-box h3 { 
+            margin: 0 0 8px 0; 
+            color: #1e40af; 
+            font-size: 16px;
+        }
+        .info-box ul { 
+            margin: 0; 
+            padding-left: 20px; 
+        }
+        .info-box li { 
+            margin: 4px 0; 
+            color: #374151;
+        }
+        .footer { 
+            padding: 20px; 
+            text-align: center; 
+            color: #6b7280; 
+            font-size: 14px; 
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer p { 
+            margin: 4px 0; 
+        }
+        @media only screen and (max-width: 600px) {
+            .container { 
+                width: 100% !important; 
+                padding: 10px !important; 
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+            .header h1 { 
+                font-size: 20px !important; 
+            }
+            .button { 
+                display: block !important; 
+                width: 100% !important; 
+                text-align: center !important; 
+                box-sizing: border-box !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 ログインリンク</h1>
+        </div>
+        <div class="content">
+            <h2>こんにちは！</h2>
+            <p>Knowledge Appにログインするためのリンクをお送りします。</p>
+            <p style="text-align: center;">
+                <a href="{{ .ConfirmationURL }}" class="button">ログインする</a>
+            </p>
+            
+            <div class="info-box">
+                <h3>⚠️ 重要事項</h3>
+                <ul>
+                    <li>このリンクは24時間有効です</li>
+                    <li>このリンクは一度だけ使用できます</li>
+                    <li>心当たりのない場合は、このメールを無視してください</li>
+                    <li>セキュリティのため、リンクは共有しないでください</li>
+                </ul>
+            </div>
+            
+            <p>ログインに問題がある場合は、サポートチームまでお問い合わせください。</p>
+        </div>
+        <div class="footer">
+            <p>このメールは自動送信されています。返信はできません。</p>
+            <p>© 2024 Knowledge App. All rights reserved.</p>
+            <p>Knowledge App - チームの知識を共有・活用するプラットフォーム</p>
+        </div>
+    </div>
+</body>
+</html>

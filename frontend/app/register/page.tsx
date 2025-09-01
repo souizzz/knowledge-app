@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { supabase } from '../../lib/supabase'
+import { useState, useEffect } from 'react'
+import { supabaseBrowser } from '../../lib/supabase/client'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -13,9 +13,18 @@ export default function RegisterPage() {
   })
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [supabase, setSupabase] = useState<any>(null)
+
+  useEffect(() => {
+    setMounted(true)
+    setSupabase(supabaseBrowser())
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!supabase) return
     
     if (formData.password.length < 8) {
       setMessage('パスワードは8文字以上で入力してください。')
@@ -76,6 +85,11 @@ export default function RegisterPage() {
       ...prev,
       [e.target.name]: e.target.value
     }))
+  }
+
+  // マウント前は何も表示しない
+  if (!mounted) {
+    return null
   }
 
   return (

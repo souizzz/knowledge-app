@@ -5,7 +5,20 @@
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
     "dev": "cd frontend && npm run dev",
-    "start": "cd frontend && npm run start"
+    "start": "cd frontend && npm run start",
+    "setup:resend": "node scripts/setup-resend-supabase.js",
+    "setup:email-templates": "node scripts/setup-email-templates.js",
+    "setup:email": "npm run setup:resend && npm run setup:email-templates",
+    "setup:security": "node scripts/generate-security-config.js",
+    "setup:monitoring": "node scripts/setup-email-monitoring.js",
+    "test:email-auth": "node scripts/test-email-auth.js",
+    "test:security": "node scripts/test-security.js",
+    "test:monitoring": "node scripts/test-email-monitoring.js",
+    "test:all": "npm run test:email-auth && npm run test:security && npm run test:monitoring",
+    "security:audit": "npm audit && npm run test:security",
+    "monitoring:setup": "npm run setup:monitoring && npm run test:monitoring",
+    "deploy:frontend": "node scripts/deploy-frontend.js",
+    "deploy:all": "npm run deploy:frontend"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -14,6 +27,9 @@
   "dependencies": {
     "next": "14.2.32",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "@supabase/supabase-js": "^2.56.0",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^2.7.0"
   }
 }

@@ -109,3 +109,14 @@ enabled = false
 # vector_port = 54328
 # Configure the retention period for analytics data in days. Defaults to 30 days.
 # retention_days = 30
+
+[functions.auth-hook]
+enabled = true
+verify_jwt = true
+import_map = "./functions/auth-hook/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/auth-hook/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/auth-hook/*.html" ]

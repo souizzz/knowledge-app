@@ -6,13 +6,29 @@ import { useRouter } from "next/navigation";
 export default function SettingsMenu() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<{
+    email: string | null;
+    username: string | null;
+    org_name: string | null;
+  } | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   let btnRef: HTMLButtonElement | null = null;
   let menuRef: HTMLDivElement | null = null;
 
   useEffect(() => {
-    if (open) fetchMe().then((me) => setEmail(me?.email ?? null));
+    if (open) {
+      fetchMe().then((me) => {
+        if (me) {
+          setUserInfo({
+            email: me.email ?? null,
+            username: me.username ?? null,
+            org_name: me.org_name ?? null,
+          });
+        } else {
+          setUserInfo(null);
+        }
+      });
+    }
   }, [open]);
 
   useEffect(() => {
@@ -100,7 +116,7 @@ export default function SettingsMenu() {
             position: "absolute",
             right: "0",
             marginTop: "8px",
-            width: "240px",
+            width: "280px",
             borderRadius: "12px",
             border: "1px solid #e5e7eb",
             backgroundColor: "white",
@@ -114,6 +130,50 @@ export default function SettingsMenu() {
             ログイン中
           </div>
           <div style={{ 
+            marginBottom: "4px", 
+            fontSize: "12px", 
+            color: "#6b7280",
+            fontWeight: "400"
+          }}>
+            法人名
+          </div>
+          <div style={{ 
+            marginBottom: "8px", 
+            fontSize: "14px", 
+            fontWeight: "500",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
+          }}>
+            {userInfo?.org_name ?? "（法人名なし）"}
+          </div>
+          <div style={{ 
+            marginBottom: "4px", 
+            fontSize: "12px", 
+            color: "#6b7280",
+            fontWeight: "400"
+          }}>
+            名前
+          </div>
+          <div style={{ 
+            marginBottom: "8px", 
+            fontSize: "14px", 
+            fontWeight: "500",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
+          }}>
+            {userInfo?.username ?? "（名前なし）"}
+          </div>
+          <div style={{ 
+            marginBottom: "4px", 
+            fontSize: "12px", 
+            color: "#6b7280",
+            fontWeight: "400"
+          }}>
+            メールアドレス
+          </div>
+          <div style={{ 
             marginBottom: "12px", 
             fontSize: "14px", 
             fontWeight: "500",
@@ -121,7 +181,7 @@ export default function SettingsMenu() {
             textOverflow: "ellipsis",
             whiteSpace: "nowrap"
           }}>
-            {email ?? "（メール情報なし）"}
+            {userInfo?.email ?? "（メール情報なし）"}
           </div>
           <button
             onClick={(e) => {

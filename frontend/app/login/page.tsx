@@ -1,259 +1,334 @@
-'use client'
-
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabase'
+"use client";
+import { useState, useEffect } from "react";
+import { supabaseBrowser } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
-  const [message, setMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [debugInfo, setDebugInfo] = useState('')
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const [supabase, setSupabase] = useState<any>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setMessage('')
-    setDebugInfo('')
+  // マウント状態を管理
+  useEffect(() => {
+    setMounted(true);
+    setSupabase(supabaseBrowser());
+  }, []);
+
+  // URLパラメータからエラーメッセージを取得
+  useEffect(() => {
+    if (!mounted) return;
+    
+    // URLSearchParamsを使用してURLパラメータを取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('e');
+    const errorMsg = urlParams.get('msg');
+    
+    if (error) {
+      let errorMessage = "認証エラーが発生しました";
+      switch (error) {
+        case 'exchange':
+          errorMessage = "認証コードの処理に失敗しました。もう一度お試しください。";
+          break;
+        case 'nosession':
+          errorMessage = "セッションが見つかりません。再度ログインしてください。";
+          break;
+        case 'user':
+          errorMessage = "ユーザー情報の取得に失敗しました。";
+          break;
+        case 'invite':
+          errorMessage = "招待が無効または期限切れです。";
+          break;
+        default:
+          errorMessage = errorMsg ? decodeURIComponent(errorMsg) : "認証エラーが発生しました";
+      }
+      setMessage(errorMessage);
+    }
+  }, [mounted]);
+
+  const sendMagicLink = async () => {
+    if (!supabase) return;
+    
+    // メールアドレスの検証
+    if (!email.trim()) {
+      setMessage("メールアドレスを入力してください");
+      return;
+    }
+
+    // メールアドレスの形式チェック
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage("有効なメールアドレスを入力してください");
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage("");
     
     try {
-      // デバッグ情報を追加
-      console.log('Attempting login with:', { email: formData.email, passwordLength: formData.password.length })
-      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-      console.log('Supabase Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/callback`,
+        },
+      });
       
-      setDebugInfo(`Connecting to: ${process.env.NEXT_PUBLIC_SUPABASE_URL || 'Using fallback URL'}`)
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      })
-
       if (error) {
-        console.error('Login error:', error)
-        setDebugInfo(`Error details: ${error.message}`)
-        if (error.message.includes('Email not confirmed')) {
-          setMessage('メールアドレスの認証が完了していません。')
-        } else if (error.message.includes('Invalid login credentials')) {
-          setMessage('メールアドレスまたはパスワードが正しくありません。')
-        } else if (error.message.includes('fetch')) {
-          setMessage('ネットワーク接続エラーが発生しました。Supabaseの設定を確認してください。')
+        console.error('Magic link error:', error);
+        
+        // メール送信失敗をログに記録
+        console.log(`[EMAIL_SEND] Failed to send magic link to ${email}: ${error.message}`);
+        
+        // エラーメッセージの詳細化
+        let errorMessage = "エラーが発生しました";
+        if (error.message.includes('rate limit')) {
+          errorMessage = "送信回数が上限に達しました。しばらく待ってから再試行してください";
+        } else if (error.message.includes('invalid email')) {
+          errorMessage = "無効なメールアドレスです";
+        } else if (error.message.includes('network')) {
+          errorMessage = "ネットワークエラーが発生しました。接続を確認してください";
         } else {
-          setMessage(`ログインエラー: ${error.message}`)
+          errorMessage = `エラー: ${error.message}`;
         }
-      } else if (data.user) {
-        console.log('Login successful:', data.user)
-        setMessage('ログイン成功')
-        setDebugInfo('認証成功、リダイレクト中...')
-        setTimeout(() => {
-          router.push('/')
-        }, 1000)
+        
+        setMessage(errorMessage);
+      } else {
+        // メール送信成功をログに記録
+        console.log(`[EMAIL_SEND] Magic link sent successfully to ${email}`);
+        
+        setSent(true);
+        setMessage("メールを送信しました。メールボックスを確認してリンクをクリックしてください。");
       }
     } catch (error) {
-      console.error('Network error:', error)
-      setDebugInfo(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      setMessage('ネットワークエラーが発生しました。')
+      console.error('Network error:', error);
+      setMessage("ネットワークエラーが発生しました。インターネット接続を確認してください。");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
+  // マウント前は何も表示しない
+  if (!mounted) {
+    return null;
   }
 
   return (
     <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#f9fafb',
-      padding: '1rem'
+      maxWidth: 420,
+      margin: "64px auto",
+      padding: "32px",
+      backgroundColor: "white",
+      borderRadius: "12px",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      border: "1px solid #e5e7eb"
     }}>
-      <div style={{
-        maxWidth: '400px',
-        width: '100%',
-        backgroundColor: 'white',
-        padding: '2rem',
-        borderRadius: '0.5rem',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h2 style={{
-            fontSize: '1.875rem',
-            fontWeight: '800',
-            color: '#1f2937',
-            margin: 0
-          }}>
-            ログイン
-          </h2>
+      <div style={{ textAlign: "center", marginBottom: "32px" }}>
+        <h1 style={{
+          fontSize: "28px",
+          fontWeight: "700",
+          color: "#1f2937",
+          margin: "0 0 8px 0"
+        }}>
+          🔐 ログイン
+        </h1>
+        <p style={{
+          color: "#6b7280",
+          fontSize: "16px",
+          margin: "0"
+        }}>
+          メールアドレスを入力してログインしてください
+        </p>
+      </div>
+
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{
+          display: "block",
+          fontSize: "14px",
+          fontWeight: "600",
+          color: "#374151",
+          marginBottom: "8px"
+        }}>
+          メールアドレス
+        </label>
+        <input
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isLoading}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            border: "2px solid #e5e7eb",
+            borderRadius: "8px",
+            fontSize: "16px",
+            transition: "border-color 0.2s ease",
+            boxSizing: "border-box",
+            backgroundColor: isLoading ? "#f9fafb" : "white"
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = "#3b82f6";
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = "#e5e7eb";
+          }}
+        />
+      </div>
+
+      <button 
+        onClick={sendMagicLink} 
+        disabled={isLoading || !email.trim() || !supabase}
+        style={{
+          width: "100%",
+          padding: "14px 24px",
+          backgroundColor: isLoading || !email.trim() || !supabase ? "#9ca3af" : "#3b82f6",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          fontSize: "16px",
+          fontWeight: "600",
+          cursor: isLoading || !email.trim() || !supabase ? "not-allowed" : "pointer",
+          transition: "all 0.2s ease",
+          marginBottom: "20px"
+        }}
+        onMouseOver={(e) => {
+          if (!isLoading && email.trim() && supabase) {
+            const target = e.target as HTMLButtonElement;
+            target.style.backgroundColor = "#2563eb";
+            target.style.transform = "translateY(-1px)";
+          }
+        }}
+        onMouseOut={(e) => {
+          if (!isLoading && email.trim() && supabase) {
+            const target = e.target as HTMLButtonElement;
+            target.style.backgroundColor = "#3b82f6";
+            target.style.transform = "translateY(0)";
+          }
+        }}
+      >
+        {isLoading ? (
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+            <span style={{
+              width: "16px",
+              height: "16px",
+              border: "2px solid #ffffff",
+              borderTop: "2px solid transparent",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite"
+            }}></span>
+            送信中...
+          </span>
+        ) : (
+          "📧 メールリンクを送る"
+        )}
+      </button>
+
+      {sent && (
+        <div style={{
+          padding: "16px",
+          backgroundColor: "#d1fae5",
+          border: "1px solid #a7f3d0",
+          borderRadius: "8px",
+          marginBottom: "20px"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "20px" }}>✅</span>
+            <div>
+              <p style={{
+                margin: "0",
+                color: "#065f46",
+                fontWeight: "600",
+                fontSize: "14px"
+              }}>
+                メールを送信しました
+              </p>
+              <p style={{
+                margin: "4px 0 0 0",
+                color: "#047857",
+                fontSize: "13px"
+              }}>
+                メールボックスを確認してリンクをクリックしてください
+              </p>
+            </div>
+          </div>
         </div>
+      )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div>
-            <label htmlFor="email" style={{
-              display: 'block',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              color: '#374151',
-              marginBottom: '0.5rem'
-            }}>
-              メールアドレス
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              disabled={isLoading}
-              placeholder="example@email.com"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: isLoading ? '#f3f4f6' : 'white',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" style={{
-              display: 'block',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              color: '#374151',
-              marginBottom: '0.5rem'
-            }}>
-              パスワード
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              disabled={isLoading}
-              placeholder="パスワードを入力"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: isLoading ? '#f3f4f6' : 'white',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading || !formData.email.trim() || !formData.password.trim()}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: isLoading ? '#9ca3af' : '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.375rem',
-              fontSize: '1rem',
-              fontWeight: '500',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s ease',
-              outline: 'none',
-              userSelect: 'none',
-              WebkitTapHighlightColor: 'transparent'
-            }}
-            onMouseOver={(e) => {
-              if (!isLoading && formData.email.trim() && formData.password.trim()) {
-                e.currentTarget.style.backgroundColor = '#2563eb';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (!isLoading && formData.email.trim() && formData.password.trim()) {
-                e.currentTarget.style.backgroundColor = '#3b82f6';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }
-            }}
-            onTouchStart={(e) => {
-              if (!isLoading && formData.email.trim() && formData.password.trim()) {
-                e.currentTarget.style.transform = 'scale(0.98)';
-              }
-            }}
-            onTouchEnd={(e) => {
-              if (!isLoading && formData.email.trim() && formData.password.trim()) {
-                e.currentTarget.style.transform = 'scale(1)';
-              }
-            }}
-          >
-            {isLoading ? 'ログイン中...' : 'ログイン'}
-          </button>
-
-          {message && (
-            <div style={{
-              textAlign: 'center',
-              fontSize: '0.875rem',
-              color: message.includes('成功') ? '#059669' : '#dc2626',
-              padding: '0.75rem',
-              backgroundColor: message.includes('成功') ? '#d1fae5' : '#fee2e2',
-              border: `1px solid ${message.includes('成功') ? '#a7f3d0' : '#fca5a5'}`,
-              borderRadius: '0.375rem'
+      {message && !sent && (
+        <div style={{
+          padding: "16px",
+          backgroundColor: message.includes("送信") ? "#d1fae5" : "#fee2e2",
+          border: `1px solid ${message.includes("送信") ? "#a7f3d0" : "#fca5a5"}`,
+          borderRadius: "8px",
+          marginBottom: "20px"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "20px" }}>
+              {message.includes("送信") ? "✅" : "❌"}
+            </span>
+            <p style={{
+              margin: "0",
+              color: message.includes("送信") ? "#065f46" : "#dc2626",
+              fontSize: "14px",
+              fontWeight: "500"
             }}>
               {message}
-            </div>
-          )}
-
-          {debugInfo && (
-            <div style={{
-              fontSize: '0.75rem',
-              color: '#6b7280',
-              padding: '0.5rem',
-              backgroundColor: '#f3f4f6',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.375rem',
-              fontFamily: 'monospace'
-            }}>
-              <strong>デバッグ情報:</strong><br />
-              {debugInfo}
-            </div>
-          )}
-
-          <div style={{ textAlign: 'center' }}>
-            <a 
-              href="/register" 
-              style={{
-                color: '#3b82f6',
-                textDecoration: 'none',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.color = '#2563eb';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.color = '#3b82f6';
-              }}
-            >
-              新規登録はこちら
-            </a>
+            </p>
           </div>
-        </form>
+        </div>
+      )}
+
+      <div style={{
+        textAlign: "center",
+        padding: "20px 0",
+        borderTop: "1px solid #e5e7eb",
+        marginTop: "20px"
+      }}>
+        <p style={{
+          margin: "0 0 16px 0",
+          color: "#6b7280",
+          fontSize: "13px"
+        }}>
+          初回の場合は新規アカウントが作成されます
+        </p>
+        
+        <button 
+          onClick={() => window.location.href = '/register'}
+          style={{
+            width: "100%",
+            padding: "12px 24px",
+            backgroundColor: "transparent",
+            color: "#3b82f6",
+            border: "2px solid #3b82f6",
+            borderRadius: "8px",
+            fontSize: "14px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.2s ease"
+          }}
+          onMouseOver={(e) => {
+            const target = e.target as HTMLButtonElement;
+            target.style.backgroundColor = "#3b82f6";
+            target.style.color = "white";
+          }}
+          onMouseOut={(e) => {
+            const target = e.target as HTMLButtonElement;
+            target.style.backgroundColor = "transparent";
+            target.style.color = "#3b82f6";
+          }}
+        >
+          📝 新規登録はこちら
+        </button>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
-  )
+  );
 }

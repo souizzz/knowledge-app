@@ -4,6 +4,18 @@ WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm ci --only=production
 
+# ビルド時に必要な公開環境変数を受け取る
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_API_BASE
+ARG NEXT_PUBLIC_FRONTEND_URL
+
+# Next.jsのビルドプロセスに環境変数を渡す
+ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+ENV NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
+ENV NEXT_PUBLIC_FRONTEND_URL=${NEXT_PUBLIC_FRONTEND_URL}
+
 COPY frontend/ ./
 RUN npm run build
 
@@ -15,8 +27,9 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+# publicディレクトリが存在する場合のみコピー
+RUN mkdir -p ./public
+COPY --from=builder /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs

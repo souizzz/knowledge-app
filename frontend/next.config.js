@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Vercelではstandaloneは不要
-    // output: 'standalone',
+    // Docker用にstandaloneモードを有効化
+    output: 'standalone',
     
     // キャッシュバスティング用の設定
     generateBuildId: async () => {
@@ -26,8 +26,8 @@ const nextConfig = {
     trailingSlash: false,
     skipTrailingSlashRedirect: true,
     
-    // APIルートの静的生成を完全に無効化
-    outputFileTracing: false,
+    // standaloneモード用にoutputFileTracingを有効化
+    outputFileTracing: true,
     
     // CORS設定を追加
     async headers() {
