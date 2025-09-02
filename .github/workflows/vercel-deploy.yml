@@ -20,10 +20,11 @@ jobs:
       - name: Install Vercel CLI
         run: npm i -g vercel@latest
 
-      - name: Configure Vercel Project
+      - name: Verify Vercel Configuration
         working-directory: frontend
         run: |
-          echo "{\n  \"version\": 2,\n  \"builds\": [{ \"src\": \"package.json\", \"use\": \"@vercel/next\" }]\n}" > vercel.json
+          echo "Checking vercel.json configuration..."
+          cat vercel.json
 
       - name: Pull Vercel Environment Information
         working-directory: frontend
@@ -32,10 +33,6 @@ jobs:
 
       - name: Build Project
         working-directory: frontend
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_FRONTEND_URL: ${{ secrets.NEXT_PUBLIC_FRONTEND_URL }}
         run: |
           npm ci
           npm run build
@@ -46,6 +43,11 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+          echo "Starting Vercel deployment..."
+          vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }} || {
+            echo "Deployment failed. Checking logs..."
+            exit 1
+          }
+          echo "Deployment completed successfully!"
 
 
