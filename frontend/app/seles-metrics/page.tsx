@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import Head from 'next/head'
 
 type Report = {
     id: number; 
@@ -138,18 +137,10 @@ export default function SalesForm(){
     }
         
     return (
-        <>
-            <Head>
-                <title>営業数値管理 {VERSION}</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-                <meta httpEquiv="Pragma" content="no-cache" />
-                <meta httpEquiv="Expires" content="0" />
-            </Head>
-            <div>
-                <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#1f2937' }}>
-                    営業数値管理 {VERSION}
-                </h1>
+        <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#1f2937' }}>
+                営業数値記入 {VERSION}
+            </h1>
             <div style={{ 
                 padding: '0.5rem', 
                 backgroundColor: '#f3f4f6', 
@@ -231,6 +222,5 @@ export default function SalesForm(){
                 </table>
             </div>
             </div>
-        </>
     )
 }

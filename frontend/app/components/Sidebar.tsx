@@ -16,7 +16,7 @@ const NAV = [
     )
   },
   { 
-    href: "/seles-metrics?v=v2.2.0&cb=" + Date.now(), 
+    href: "/seles-metrics", 
     label: "営業数値管理",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

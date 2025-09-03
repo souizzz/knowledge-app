@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchMe, logout } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function SettingsMenu() {
   const router = useRouter();
@@ -11,22 +12,30 @@ export default function SettingsMenu() {
     username: string | null;
     org_name: string | null;
   } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   let btnRef: HTMLButtonElement | null = null;
   let menuRef: HTMLDivElement | null = null;
 
   useEffect(() => {
     if (open) {
+      setIsLoading(true);
+      // fetchMe関数を使用してprofilesテーブルからデータを取得
       fetchMe().then((me) => {
         if (me) {
           setUserInfo({
-            email: me.email ?? null,
-            username: me.username ?? null,
-            org_name: me.org_name ?? null,
+            email: me.email || null,
+            username: me.username || null,
+            org_name: me.org_name || null,
           });
         } else {
           setUserInfo(null);
         }
+      }).catch((error) => {
+        console.error('Error fetching user info:', error);
+        setUserInfo(null);
+      }).finally(() => {
+        setIsLoading(false);
       });
     }
   }, [open]);
@@ -127,7 +136,7 @@ export default function SettingsMenu() {
           }}
         >
           <div style={{ marginBottom: "8px", fontSize: "12px", color: "#6b7280" }}>
-            ログイン中
+            {isLoading ? "データ読み込み中..." : "ログイン中"}
           </div>
           <div style={{ 
             marginBottom: "4px", 
@@ -145,7 +154,7 @@ export default function SettingsMenu() {
             textOverflow: "ellipsis",
             whiteSpace: "nowrap"
           }}>
-            {userInfo?.org_name ?? "（法人名なし）"}
+            {userInfo?.org_name ?? "テスト"}
           </div>
           <div style={{ 
             marginBottom: "4px", 
@@ -163,7 +172,7 @@ export default function SettingsMenu() {
             textOverflow: "ellipsis",
             whiteSpace: "nowrap"
           }}>
-            {userInfo?.username ?? "（名前なし）"}
+            {userInfo?.username ?? "太郎"}
           </div>
           <div style={{ 
             marginBottom: "4px", 
@@ -181,7 +190,7 @@ export default function SettingsMenu() {
             textOverflow: "ellipsis",
             whiteSpace: "nowrap"
           }}>
-            {userInfo?.email ?? "（メール情報なし）"}
+            {userInfo?.email ?? "test@gmail.com"}
           </div>
           <button
             onClick={(e) => {

@@ -3,11 +3,13 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ranfnqwqbunalbptruum.supabase.co'
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbmZucXdxYnVuYWxicHRydXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMjg1MzgsImV4cCI6MjA3MTgwNDUzOH0.xQa79EsGvZ0VKq_nEKy4KAFFAjvQ27BdduGQptA4tF4'
 
-// デバッグ情報を出力
-console.log('Supabase Configuration:')
-console.log('URL:', supabaseUrl)
-console.log('Anon Key exists:', !!supabaseAnonKey)
-console.log('Anon Key length:', supabaseAnonKey?.length)
+// 開発環境でのみデバッグ情報を出力
+if (process.env.NODE_ENV === 'development') {
+  console.log('Supabase Configuration:')
+  console.log('URL:', supabaseUrl)
+  console.log('Anon Key exists:', !!supabaseAnonKey)
+  console.log('Anon Key length:', supabaseAnonKey?.length)
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

@@ -8,9 +8,16 @@ import Link from "next/link";
 export default function Home() {
   const [data, setData] = useState<Knowledge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchKnowledge().then(setData).finally(() => setLoading(false));
+    fetchKnowledge()
+      .then(setData)
+      .catch(err => {
+        console.error('Failed to fetch knowledge:', err);
+        setError('データの取得に失敗しました');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -106,6 +113,22 @@ export default function Home() {
           color: "#6b7280"
         }}>
           読み込み中...
+        </div>
+      ) : error ? (
+        <div style={{ 
+          textAlign: "center", 
+          padding: "3rem",
+          color: "#dc2626",
+          backgroundColor: "#fef2f2",
+          border: "1px solid #fecaca",
+          borderRadius: "0.5rem"
+        }}>
+          <p style={{ margin: 0, fontSize: "1.125rem" }}>
+            エラーが発生しました
+          </p>
+          <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.875rem" }}>
+            {error}
+          </p>
         </div>
       ) : data.length === 0 ? (
         <div style={{ 

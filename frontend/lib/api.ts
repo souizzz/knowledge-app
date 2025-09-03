@@ -58,6 +58,7 @@ export type MeClaims = {
   sub: string;
   org_id: number;
   org_name: string;
+  representative_name?: string;
   role: string;
   username: string;
   email?: string;
@@ -77,44 +78,73 @@ export async function fetchMe(): Promise<MeClaims | null> {
 
     console.log('[fetchMe] User ID:', user.id);
 
-    // ユーザー情報と組織情報を取得
-    const { data: userData, error: userError } = await supabase
-      .from('users')
+    // profilesテーブルからユーザー情報を取得
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
       .select(`
         *,
-        organizations (
-          id,
-          name
+        org_members!inner (
+          organizations (
+            id,
+            name,
+            representative_name
+          )
         )
       `)
       .eq('id', user.id)
       .single();
 
-    console.log('[fetchMe] User data:', userData);
-    console.log('[fetchMe] User error:', userError);
+    console.log('[fetchMe] Profile data:', profileData);
+    console.log('[fetchMe] Profile error:', profileError);
 
-    if (userError || !userData) {
-      console.log('[fetchMe] Failed to get user data');
+    if (profileError || !profileData) {
+      console.log('[fetchMe] Failed to get profile data');
       return null;
     }
 
     // 組織情報の確認
-    const orgName = userData.organizations?.name || 'Default Organization';
+    const orgName = profileData.org_members?.organizations?.name || 'Default Organization';
+    const representativeName = profileData.org_members?.organizations?.representative_name || '';
     console.log('[fetchMe] Organization name:', orgName);
 
     return {
       sub: user.id,
-      org_id: userData.org_id,
+      org_id: profileData.org_members?.organizations?.id || 0,
       org_name: orgName,
-      role: userData.role,
-      username: userData.username,
-      email: userData.email,
+      representative_name: representativeName,
+      role: 'member', // デフォルトロール
+      username: profileData.name || user.email || '',
+      email: profileData.email || user.email || '',
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 3600
     };
   } catch (error) {
     console.error('[fetchMe] Error:', error);
     return null;
+  }
+}
+
+// パスワード認証によるログイン
+export async function loginWithPassword(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error('Login error:', error);
+      return { success: false, error: error.message };
+    }
+
+    if (data.user) {
+      return { success: true };
+    }
+
+    return { success: false, error: 'ログインに失敗しました' };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, error: 'ネットワークエラーが発生しました' };
   }
 }
 
@@ -129,7 +159,8 @@ export async function logout(): Promise<boolean> {
 }
 
 export async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const res = await fetch(process.env.NEXT_PUBLIC_API_BASE + path, {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const res = await fetch(baseUrl + path, {
     ...opts,
     headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
     credentials: 'include',
