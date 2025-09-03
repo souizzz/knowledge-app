@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Knowledge } from '../../../../lib/api';
+import { Knowledge, getCurrentUser } from '../../../../lib/api';
 
 interface KnowledgeFormProps {
   knowledge?: Knowledge | null;
@@ -12,21 +12,27 @@ interface KnowledgeFormProps {
 export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: KnowledgeFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [userId, setUserId] = useState(1); // Default user ID
+  const [userId, setUserId] = useState<string>(''); // Current user ID
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (knowledge) {
-      setTitle(knowledge.title);
-      setContent(knowledge.content);
-      setUserId(knowledge.user_id || 1);
-    } else {
-      setTitle('');
-      setContent('');
-      setUserId(1);
-    }
-    setError(null);
+    const initializeForm = async () => {
+      if (knowledge) {
+        setTitle(knowledge.title);
+        setContent(knowledge.content);
+        setUserId(knowledge.user_id);
+      } else {
+        setTitle('');
+        setContent('');
+        // 現在のユーザーIDを取得
+        const user = await getCurrentUser();
+        setUserId(user?.id || '');
+      }
+      setError(null);
+    };
+    
+    initializeForm();
   }, [knowledge]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +59,8 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
       if (!knowledge) {
         setTitle('');
         setContent('');
-        setUserId(1);
+        const user = await getCurrentUser();
+        setUserId(user?.id || '');
       }
       
       console.log('KnowledgeForm: Successfully submitted');
@@ -66,10 +73,11 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     setTitle('');
     setContent('');
-    setUserId(1);
+    const user = await getCurrentUser();
+    setUserId(user?.id || '');
     setError(null);
     if (onCancel) {
       onCancel();
@@ -171,11 +179,11 @@ export default function KnowledgeForm({ knowledge, onSubmit, onCancel }: Knowled
           </label>
           <input
             id="userId"
-            type="number"
+            type="text"
             value={userId}
-            onChange={(e) => setUserId(parseInt(e.target.value) || 1)}
+            onChange={(e) => setUserId(e.target.value)}
             disabled={submitting}
-            placeholder="例: 1"
+            placeholder="現在のユーザーID"
             style={{
               width: '100%',
               padding: '0.75rem',
