@@ -28,70 +28,92 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export interface Database {
   public: {
     Tables: {
-      users: {
-        Row: {
-          id: number
-          org_id: number
-          username: string
-          email: string
-          password_hash: string
-          email_verified: boolean
-          role: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: number
-          org_id: number
-          username: string
-          email: string
-          password_hash: string
-          email_verified?: boolean
-          role?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: number
-          org_id?: number
-          username?: string
-          email?: string
-          password_hash?: string
-          email_verified?: boolean
-          role?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      invitations: {
+      profiles: {
         Row: {
           id: string
-          email: string
-          role: string
-          token: string
-          expires_at: string
-          accepted_at: string | null
-          inviter_id: number | null
+          email: string | null
+          name: string | null
           created_at: string
         }
         Insert: {
-          id?: string
-          email: string
-          role?: string
-          token: string
-          expires_at?: string
-          accepted_at?: string | null
-          inviter_id?: number | null
+          id: string
+          email?: string | null
+          name?: string | null
           created_at?: string
         }
         Update: {
           id?: string
-          email?: string
+          email?: string | null
+          name?: string | null
+          created_at?: string
+        }
+      }
+      organizations: {
+        Row: {
+          id: string
+          name: string
+          owner_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          owner_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          owner_id?: string
+          created_at?: string
+        }
+      }
+      org_members: {
+        Row: {
+          org_id: string
+          user_id: string
+          role: string
+          created_at: string
+        }
+        Insert: {
+          org_id: string
+          user_id: string
+          role: string
+          created_at?: string
+        }
+        Update: {
+          org_id?: string
+          user_id?: string
           role?: string
-          token?: string
+          created_at?: string
+        }
+      }
+      invites: {
+        Row: {
+          id: string
+          org_id: string
+          email: string
+          invited_by: string | null
+          expires_at: string
+          used_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          email: string
+          invited_by?: string | null
           expires_at?: string
-          accepted_at?: string | null
-          inviter_id?: number | null
+          used_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          email?: string
+          invited_by?: string | null
+          expires_at?: string
+          used_at?: string | null
           created_at?: string
         }
       }
@@ -100,7 +122,7 @@ export interface Database {
           id: number
           title: string
           content: string
-          user_id: number
+          user_id: string
           created_at: string
           updated_at: string
         }
@@ -108,7 +130,7 @@ export interface Database {
           id?: number
           title: string
           content: string
-          user_id: number
+          user_id: string
           created_at?: string
           updated_at?: string
         }
@@ -116,7 +138,7 @@ export interface Database {
           id?: number
           title?: string
           content?: string
-          user_id?: number
+          user_id?: string
           created_at?: string
           updated_at?: string
         }

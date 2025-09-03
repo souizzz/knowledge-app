@@ -4,10 +4,74 @@ export type Knowledge = {
   id: number;
   title: string;
   content: string;
-  user_id: number;
+  user_id: string;
   created_at: string;
   updated_at: string;
 };
+
+export type Profile = {
+  id: string;
+  email: string | null;
+  name: string | null;
+  created_at: string;
+};
+
+// 認証関連の関数
+export async function getCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) {
+    console.error('getCurrentUser error:', error);
+    return null;
+  }
+  return user;
+}
+
+export async function getCurrentProfile(): Promise<Profile | null> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.error('getCurrentProfile error:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('getCurrentProfile error:', error);
+    return null;
+  }
+}
+
+export async function updateProfile(updates: Partial<Profile>): Promise<Profile | null> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('updateProfile error:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('updateProfile error:', error);
+    return null;
+  }
+}
 
 export async function fetchKnowledge(): Promise<Knowledge[]> {
   try {
