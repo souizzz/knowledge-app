@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createKnowledge } from "../../../lib/api";
+import { createKnowledge, getCurrentUser } from "../../../lib/api";
 import { useRouter } from "next/navigation";
 
 export default function NewKnowledge() {
@@ -23,10 +23,16 @@ export default function NewKnowledge() {
     setError(null);
 
     try {
+      const user = await getCurrentUser();
+      if (!user) {
+        setError('ユーザー情報を取得できませんでした');
+        return;
+      }
+      
       await createKnowledge({ 
         title: title.trim(), 
         content: content.trim(), 
-        user_id: 1 
+        user_id: user.id 
       });
       router.push("/knowledge/knowledge-resister");
     } catch (err) {
